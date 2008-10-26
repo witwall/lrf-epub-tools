@@ -13,7 +13,7 @@ import java.util.zip.ZipOutputStream;
 
 import lrf.conv.BaseRenderer;
 import lrf.epub.EPUBMetaData;
-import lrf.gui.Viewer;
+import lrf.gui.EPUBViewer;
 import lrf.merge.MergeEPUBAndTOC;
 import lrf.merge.MergePDFAndTOC;
 import lrf.objects.Book;
@@ -32,13 +32,6 @@ public class RecurseDirs {
 	public static boolean lrfSize=true;
 	Hashtable<String, String> repl=new Hashtable<String, String>();
 	
-	static {
-		String current=System.getProperty("java.protocol.handler.pkgs");
-		if(current==null)
-			current="";
-		current+="|lrf";
-		System.setProperty("java.protocol.handler.pkgs", current);
-	}
 	public static void main(String args[]) {
 		try {
 			new RecurseDirs(args);
@@ -117,8 +110,7 @@ public class RecurseDirs {
 		if (root == null) {
 			UsageAndExit();
 		}
-		Viewer v=new Viewer(args[1]);
-		v.run();
+		EPUBViewer.main(args);
 		done=true;
 		return done;
 	}

@@ -17,13 +17,14 @@
  * Copyright 2007 Arash Payan
  */
 
-package com.arashpayan.filetree;
+package lrf.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;

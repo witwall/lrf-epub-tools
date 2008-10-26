@@ -1,5 +1,6 @@
 package lrf.gui;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import lrf.epub.EPUBDoc;
@@ -7,6 +8,10 @@ import lrf.epub.EPUBDoc;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 
 public class EPUBPanel extends XHTMLPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 323831416851958557L;
 	int currentSubDoc=0;
 	int maxSubDocs;
 	String epbURL;
@@ -32,6 +37,9 @@ public class EPUBPanel extends XHTMLPanel {
 	}
 
 	public EPUBPanel(String epb) throws Exception{
+		init(epb);
+	}
+	public void init(String epb) throws MalformedURLException, Exception {
 		epbURL=epb;
 		URL u=new URL(epbURL);
 		String fileName=u.getPath();
@@ -39,5 +47,17 @@ public class EPUBPanel extends XHTMLPanel {
 		maxSubDocs=edoc.getNumOfDocs();
 		currentSubDoc=0;
 		setDocument(epbURL);
+	}
+	
+	public EPUBPanel() {
+		try {
+			init("epub://d:/eclipse/WS/LRFToolsV2/EPUBBestPractices-1_0.epub/");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

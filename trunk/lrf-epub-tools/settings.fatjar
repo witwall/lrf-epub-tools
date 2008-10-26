@@ -1,0 +1,14 @@
+#Fat Jar Configuration File
+#Fri Oct 24 19:13:20 CEST 2008
+onejar.license.required=false
+manifest.classpath=
+manifest.removesigners=true
+onejar.checkbox=false
+jarname=D\:\\_Eladio\\_Libros\\epubBooks\\LRFTools-v0.9.137.jar
+manifest.mergeall=true
+manifest.mainclass=lrf.RecurseDirs
+manifest.file=<createnew>
+jarname.isextern=true
+onejar.expand=
+excludes=
+includes=
