@@ -17,16 +17,19 @@
  * Copyright 2007 Arash Payan
  */
 
-package com.arashpayan.filetree;
+package lrf.gui;
 
 import java.awt.Component;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
+
 import javax.swing.JFileChooser;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -130,6 +133,7 @@ public class FileTree extends JTree {
         
         FileTreeListener ftl = new FileTreeListener(this);
         addMouseListener(ftl);
+        addTreeSelectionListener(new tsl());
     }
     
     /**
@@ -235,6 +239,10 @@ public class FileTree extends JTree {
                 
                 if (!showHiddenFiles && file.isHidden())
                     continue;
+                
+                String fname=file.getName();
+                if(!file.isDirectory() && !fname.endsWith(".epub"))
+                	continue;
                 
                 FileTreeNode subFile = new FileTreeNode(file);
                 DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(subFile);
@@ -451,5 +459,14 @@ public class FileTree extends JTree {
          * used to obtain icons for non-Windows OSes
          */
         private JFileChooser fileChooser;
+    }
+    
+    class tsl implements TreeSelectionListener {
+    	@Override
+    	public void valueChanged(TreeSelectionEvent e) {
+    		TreePath tp=e.getNewLeadSelectionPath();
+    		FileTreeNode n=(FileTreeNode)tp.getLastPathComponent();
+   
+    	}
     }
 }

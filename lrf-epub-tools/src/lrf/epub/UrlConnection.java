@@ -29,8 +29,15 @@ public class UrlConnection extends URLConnection {
 			}
 		}
 		if(pos+6>=aux.length()){
-			//Suponemos el spine
-			inside=epd.itemsID_HR.get(epd.spines.elementAt(0));
+			String ref=url.getRef();
+			if(ref!=null){
+				//Number expected, from 0 to spines.size()-1
+				int spinNumber=Integer.parseInt(ref);
+				inside=epd.itemsID_HR.get(epd.spines.elementAt(spinNumber));
+			}else{
+				//Suponemos el spine
+				inside=epd.itemsID_HR.get(epd.spines.elementAt(0));
+			}
 		}else{
 			inside=aux.substring(pos+6);
 		}
@@ -39,13 +46,18 @@ public class UrlConnection extends URLConnection {
 
 	@Override
 	public void connect() throws IOException {
-		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 
 	}
 
 	@Override
 	public InputStream getInputStream() throws IOException {
 		return books.get(name).getInputStream(inside);
+	}
+
+	@Override
+	public int getContentLength() {
+		return books.get(name).getNumOfDocs();
 	}
 
 }

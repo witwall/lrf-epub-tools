@@ -2,7 +2,6 @@ package lrf.epub;
 
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Vector;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;

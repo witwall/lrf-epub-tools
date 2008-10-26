@@ -17,7 +17,7 @@
  * Copyright 2007 Arash Payan
  */
 
-package com.arashpayan.filetree;
+package lrf.gui;
 
 /**
  * some handy constants that can be used throughout the program

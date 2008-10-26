@@ -35,6 +35,19 @@ public class EPUBDoc {
 	public Hashtable<String, String> itemsID_HR=new Hashtable<String, String>();
 	public Vector<String> spines=new Vector<String>();
 	
+	public static void initHandler(){
+		String current=System.getProperty("java.protocol.handler.pkgs");
+		if(current==null)
+			current="";
+		current+="|lrf";
+		System.setProperty("java.protocol.handler.pkgs", current);
+	}
+	
+	public static String toEPUBUrl(String s){
+		s=s.replace(" ","%20");
+		s=s.replace("\\","/");
+		return "epub://"+s+"/";
+	}
 	public EPUBDoc(String s) throws Exception{
 		this(new File(s));
 	}
