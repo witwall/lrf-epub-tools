@@ -22,7 +22,7 @@ public class MergeEPUBAndTOC extends EPUBMetaData{
 	
 	public void appendBook(File eBook, String ppath) throws Exception {
 		currentBookNumber++;
-		EPUBDoc doc=new EPUBDoc(eBook);
+		EPUBDoc doc=EPUBDoc.load(eBook);
 		ZipInputStream zis=new ZipInputStream(new FileInputStream(eBook));
 		ZipEntry ze;
 		//Se añaden todos los contenidos

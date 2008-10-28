@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Observable;
 
 import javax.swing.JFileChooser;
 import javax.swing.JTree;
@@ -36,13 +37,22 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import lrf.epub.EPUBDoc;
+
 /**
  * A handy little class that displays the system filesystem in a tree view.
  * @author Arash Payan (http://www.arashpayan.com)
  */
 public class FileTree extends JTree {
     
-    /** Creates a new instance of FileTree */
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6555772927329458066L;
+
+	SelListener tslInstance;
+
+	/** Creates a new instance of FileTree */
     public FileTree() {
         super(new DefaultTreeModel(new DefaultMutableTreeNode("root")));
         fileTreeModel = (DefaultTreeModel)treeModel;
@@ -77,7 +87,7 @@ public class FileTree extends JTree {
             return null;
         
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)treePath.getLastPathComponent();
-        FileTreeNode fileTreeNode = (FileTreeNode)treeNode.getUserObject();
+        BaseNode fileTreeNode = (BaseNode)treeNode.getUserObject();
         return fileTreeNode.file;
     }
     
@@ -133,7 +143,12 @@ public class FileTree extends JTree {
         
         FileTreeListener ftl = new FileTreeListener(this);
         addMouseListener(ftl);
-        addTreeSelectionListener(new tsl());
+        tslInstance=new SelListener();
+        addTreeSelectionListener(tslInstance);
+    }
+    
+    public Observable getObservable(){
+    	return tslInstance;
     }
     
     /**
@@ -208,53 +223,72 @@ public class FileTree extends JTree {
         if (userObject instanceof FileTreeNode)
         {
             FileTreeNode fileTreeNode = (FileTreeNode)userObject;
-            File []files = fileTreeNode.file.listFiles();
-            
-            // Windows displays directories before regular files, so we're going
-            // to sort the list of files such that directories appear first
-            if (Constants.isWindows)
-            {
-                Arrays.sort(files, new Comparator<File>() {
-                    public int compare(File f1, File f2) {
-                        boolean f1IsDir = f1.isDirectory();
-                        boolean f2IsDir = f2.isDirectory();
-                        
-                        if (f1IsDir == f2IsDir)
-                            return f1.compareTo(f2);
-                        if (f1IsDir && !f2IsDir)
-                            return -1;
-                        
-                        // here we assume that f1 is a file, and f2 is a directory
-                        return 1;
-                    }
-                });
-            }
-            else
-                Arrays.sort(files);
-            
-            for (File file:files)
-            {
-                if (file.isFile() && !showFiles)
-                    continue;
-                
-                if (!showHiddenFiles && file.isHidden())
-                    continue;
-                
-                String fname=file.getName();
-                if(!file.isDirectory() && !fname.endsWith(".epub"))
-                	continue;
-                
-                FileTreeNode subFile = new FileTreeNode(file);
-                DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(subFile);
-                if (file.isDirectory())
-                {
-                    if (!Constants.isOSX || navigateOSXApps || !file.getName().endsWith(".app"))
-                        subNode.add(new DefaultMutableTreeNode("Fake"));
-                }
-                node.add(subNode);
-            }
+            if(fileTreeNode.file.isDirectory())
+            	populateDir(node, fileTreeNode);
+        }
+        if (userObject instanceof EPUBTreeNode)
+        {
+        	EPUBTreeNode etn=(EPUBTreeNode)userObject;
+        	etn.populate(node);
+        }
+        if (userObject instanceof EPUBTOCTreeNode)
+        {
+        	EPUBTOCTreeNode ettn=(EPUBTOCTreeNode)userObject;
+        	ettn.populate(node);
         }
     }
+
+	private void populateDir(DefaultMutableTreeNode node,
+			FileTreeNode fileTreeNode) {
+		File []files = fileTreeNode.file.listFiles();
+		
+		// Windows displays directories before regular files, so we're going
+		// to sort the list of files such that directories appear first
+		if (Constants.isWindows)
+		{
+		    Arrays.sort(files, new Comparator<File>() {
+		        public int compare(File f1, File f2) {
+		            boolean f1IsDir = f1.isDirectory();
+		            boolean f2IsDir = f2.isDirectory();
+		            
+		            if (f1IsDir == f2IsDir)
+		                return f1.compareTo(f2);
+		            if (f1IsDir && !f2IsDir)
+		                return -1;
+		            
+		            // here we assume that f1 is a file, and f2 is a directory
+		            return 1;
+		        }
+		    });
+		}
+		else
+		    Arrays.sort(files);
+		
+		for (File file:files)
+		{
+		    if (file.isFile() && !showFiles)
+		        continue;
+		    
+		    if (!showHiddenFiles && file.isHidden())
+		        continue;
+		    
+		    String fname=file.getName();
+		    Object uo=null;
+		    if(fname.toLowerCase().endsWith(".epub")){
+		    	uo=new EPUBTreeNode(file);
+		    }else{
+		    	uo=new FileTreeNode(file);
+		    }
+		    DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(uo);
+
+		    if (file.isDirectory() || fname.toLowerCase().endsWith(".epub"))
+		    {
+		        if (!Constants.isOSX || navigateOSXApps || !file.getName().endsWith(".app"))
+		            subNode.add(new DefaultMutableTreeNode("Fake"));
+		    }
+		    node.add(subNode);
+		}
+	}
     
     /**
      * Expands the tree to the <code>File</code> specified by the argument, and selects
@@ -415,6 +449,11 @@ public class FileTree extends JTree {
      */
     private class FileTreeCellRenderer extends DefaultTreeCellRenderer {
         /**
+		 * 
+		 */
+		private static final long serialVersionUID = 8960723528676414291L;
+
+		/**
          * just a simple constructor
          */
         public FileTreeCellRenderer() {
@@ -460,13 +499,54 @@ public class FileTree extends JTree {
          */
         private JFileChooser fileChooser;
     }
-    
-    class tsl implements TreeSelectionListener {
+    public File epubToShow;
+    public String linkInsideEpub;
+    class SelListener extends Observable implements TreeSelectionListener {
     	@Override
     	public void valueChanged(TreeSelectionEvent e) {
-    		TreePath tp=e.getNewLeadSelectionPath();
-    		FileTreeNode n=(FileTreeNode)tp.getLastPathComponent();
-   
+    		DefaultMutableTreeNode dmto=
+    			(DefaultMutableTreeNode)e.getNewLeadSelectionPath().getLastPathComponent();
+    		Object obj=dmto.getUserObject();
+    		if(obj instanceof EPUBTreeNode){
+    			EPUBTreeNode eptn=(EPUBTreeNode)obj;
+    			epubToShow=eptn.file;
+    			linkInsideEpub="";
+				setChanged();
+				notifyObservers();
+    		}else if(obj instanceof EPUBTOCTreeNode){
+    			EPUBTOCTreeNode epttn=(EPUBTOCTreeNode)obj;
+    			epubToShow=epttn.raiz.file;
+    			linkInsideEpub=epttn.href;
+				setChanged();
+				notifyObservers();
+    		}
     	}
     }
+    /*
+     * 						
+     
+     
+    fileTree1.getObservable().addObserver(this);
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		try {
+			File f=fileTree1.epubToShow;
+			String app=fileTree1.linkInsideEpub;
+			String uri;
+			if(app==null || app.length()==0){
+				uri=EPUBDoc.load(f).getRootURL();
+			}else{
+				uri=EPUBDoc.toEPUBUrl(f)+app;
+			}
+			ePUBMultiPanel1.setEPUBFile(f);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+     * */
+     
 }
