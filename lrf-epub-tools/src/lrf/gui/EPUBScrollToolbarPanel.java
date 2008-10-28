@@ -38,7 +38,6 @@ import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.render.RenderingContext;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 
-import com.cloudgarden.resource.ArrayFocusTraversalPolicy;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -181,8 +180,6 @@ public class EPUBScrollToolbarPanel extends JPanel implements Observer{
 					xhtmlPanel.setPreferredSize(new java.awt.Dimension(368, 258));
 				}
 				scroll.setFocusCycleRoot(true);
-				scroll.setFocusTraversalPolicy(
-						new ArrayFocusTraversalPolicy(new java.awt.Component[] {xhtmlPanel}));
 			}
 			{
 				infoLine = new JToolBar();
@@ -198,7 +195,6 @@ public class EPUBScrollToolbarPanel extends JPanel implements Observer{
 					uriLabel.setFocusable(false);
 				}
 			}
-			this.setFocusTraversalPolicy(new ArrayFocusTraversalPolicy(new java.awt.Component[] {scroll}));
 			this.setFocusCycleRoot(true);
 			Application.getInstance().getContext().getResourceMap(getClass()).injectComponents(this);
 		} catch (Exception e) {
