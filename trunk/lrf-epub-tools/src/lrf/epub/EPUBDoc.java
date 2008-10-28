@@ -27,13 +27,16 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 public class EPUBDoc {
+	private static Hashtable<String, EPUBDoc> books=new Hashtable<String, EPUBDoc>();
+	private static boolean initialized=false;
 	String opfPath,opf,tocPath,toc,opfDir;
 	NSContext context=new NSContext();
-	File fileName;
+	public File epubFile;
 	public Hashtable<String, String> itemsID_MT=new Hashtable<String, String>();
 	public Hashtable<String, String> itemsHR_ID=new Hashtable<String, String>();
 	public Hashtable<String, String> itemsID_HR=new Hashtable<String, String>();
 	public Vector<String> spines=new Vector<String>();
+	long fileDate;
 	
 	public static void initHandler(){
 		String current=System.getProperty("java.protocol.handler.pkgs");
@@ -41,65 +44,102 @@ public class EPUBDoc {
 			current="";
 		current+="|lrf";
 		System.setProperty("java.protocol.handler.pkgs", current);
+		initialized=true;
 	}
 	
-	public static String toEPUBUrl(String s){
-		s=s.replace(" ","%20");
-		s=s.replace("\\","/");
-		return "epub://"+s+"/";
+	public static String toEPUBUrl(File f){
+		String fileName=null;
+		try {
+			fileName = f.getCanonicalPath();
+		} catch (IOException e) {
+			return null;
+		}
+		fileName=fileName.replace(" ","%20");
+		fileName=fileName.replace("\\","/");
+		return "epub://"+fileName+"/";
 	}
-	public EPUBDoc(String s) throws Exception{
-		this(new File(s));
+	
+	private EPUBDoc(){
+		
 	}
 	
 	public String getOPFDir(){
 		return opfDir;
 	}
 	
-	public EPUBDoc(File f) throws Exception {
-		fileName=f;
-		while(toc==null){
-			FileInputStream fis=new FileInputStream(fileName);
-			ZipInputStream zis=new ZipInputStream(fis);
-			ZipEntry entry=null;
-			while((entry=zis.getNextEntry())!=null){
-				if(entry.getName().equals("META-INF/container.xml")){
-					opfPath=getXPathVal("opf", zis, 
-						"/container/rootfiles/rootfile/@full-path");
-					int pos=opfPath.lastIndexOf("/");
-					opfDir=opfPath.substring(0,pos+1);
+	public static EPUBDoc load(String uri){
+		if(!initialized)
+			initHandler();
+		uri=uri.replace("%20", " ");
+		if(uri.startsWith("epub://"))
+			uri=uri.substring(7);
+		int pos=uri.toLowerCase().indexOf(".epub/");
+		if(pos<0)
+			return null;
+		uri=uri.substring(0,pos+5);
+		File f=new File(uri);
+		return load(f);
+	}
+	
+	public static EPUBDoc load(File f)  {
+		if(!initialized)
+			initHandler();
+		EPUBDoc ret=null;
+		try {
+			String ap=f.getCanonicalPath();
+			ret=books.get(ap);
+			if(ret==null || ret.fileDate!=f.lastModified()){
+				ret=new EPUBDoc();
+				ret.fileDate=f.lastModified();
+				books.put(ap, ret);
+				ret.epubFile=f;
+				while(ret.toc==null){
+					FileInputStream fis=new FileInputStream(ret.epubFile);
+					ZipInputStream zis=new ZipInputStream(fis);
+					ZipEntry entry=null;
+					while((entry=zis.getNextEntry())!=null){
+						if(entry.getName().equals("META-INF/container.xml")){
+							ret.opfPath=ret.getXPathVal("opf", zis, 
+								"/container/rootfiles/rootfile/@full-path");
+							int pos=ret.opfPath.lastIndexOf("/");
+							ret.opfDir=ret.opfPath.substring(0,pos+1);
+						}
+						if(ret.opfPath!=null && entry.getName().equals(ret.opfPath)){
+							ret.opf=ret.getIS(zis);
+							String ncxItem=ret.getXPathVal("opf", ret.opf, "/package/spine/@toc");
+							ret.tocPath=ret.opfDir+ret.getXPathVal("opf", ret.opf, "//item[@id=\""+ncxItem+"\"]/@href");
+						}
+						if(ret.tocPath!=null && entry.getName().equals(ret.tocPath)){
+							ret.toc=ret.getIS(zis);
+							break;
+						}
+					}
+					zis.close();
 				}
-				if(opfPath!=null && entry.getName().equals(opfPath)){
-					opf=getIS(zis);
-					String ncxItem=getXPathVal("opf", opf, "/package/spine/@toc");
-					tocPath=opfDir+getXPathVal("opf", opf, "//item[@id=\""+ncxItem+"\"]/@href");
+				//Extraemos de cada item de opf su mime-type
+				NodeList nl=ret.getNodeSet("opf", ret.opf, "/package/manifest/item");
+				for(int i=0;i<nl.getLength();i++){
+					Node n=nl.item(i);
+					NamedNodeMap nnm=n.getAttributes();
+					ret.itemsID_MT.put(nnm.getNamedItem("id").getNodeValue(), 
+							  nnm.getNamedItem("media-type").getNodeValue());
+					ret.itemsHR_ID.put(nnm.getNamedItem("href").getNodeValue(), 
+							  nnm.getNamedItem("id").getNodeValue());
+					ret.itemsID_HR.put(nnm.getNamedItem("id").getNodeValue(), 
+							nnm.getNamedItem("href").getNodeValue());
 				}
-				if(tocPath!=null && entry.getName().equals(tocPath)){
-					toc=getIS(zis);
-					break;
+				//Ahora el spine
+				nl=ret.getNodeSet("opf", ret.opf, "/package/spine/itemref");
+				for(int i=0;i<nl.getLength();i++){
+					Node n=nl.item(i);
+					NamedNodeMap nnm=n.getAttributes();
+					ret.spines.add(nnm.getNamedItem("idref").getNodeValue());
 				}
 			}
-			zis.close();
+		} catch (Exception e) {
+			
 		}
-		//Extraemos de cada item de opf su mime-type
-		NodeList nl=getNodeSet("opf", opf, "/package/manifest/item");
-		for(int i=0;i<nl.getLength();i++){
-			Node n=nl.item(i);
-			NamedNodeMap nnm=n.getAttributes();
-			itemsID_MT.put(nnm.getNamedItem("id").getNodeValue(), 
-					  nnm.getNamedItem("media-type").getNodeValue());
-			itemsHR_ID.put(nnm.getNamedItem("href").getNodeValue(), 
-					  nnm.getNamedItem("id").getNodeValue());
-			itemsID_HR.put(nnm.getNamedItem("id").getNodeValue(), 
-					nnm.getNamedItem("href").getNodeValue());
-		}
-		//Ahora el spine
-		nl=getNodeSet("opf", opf, "/package/spine/itemref");
-		for(int i=0;i<nl.getLength();i++){
-			Node n=nl.item(i);
-			NamedNodeMap nnm=n.getAttributes();
-			spines.add(nnm.getNamedItem("idref").getNodeValue());
-		}
+		return ret;
 	}
 
 	private String getXPathVal(String doct, ZipInputStream zis, String xp) throws Exception {
@@ -219,9 +259,13 @@ public class EPUBDoc {
 			appendNavPoint2(epmd, padre, nset.item(i), prepath);
 		}
 	}
+	
+	public NodeList getNavPoints() throws XPathExpressionException{
+		return getNodeSet("ncx", toc, "/dEf:ncx/dEf:navMap/dEf:navPoint");
+	}
 
 	public InputStream getInputStream(String entName) throws IOException{
-		FileInputStream fis=new FileInputStream(fileName);
+		FileInputStream fis=new FileInputStream(epubFile);
 		ZipInputStream zis=new ZipInputStream(fis);
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
 		ZipEntry entry=null;
@@ -232,25 +276,42 @@ public class EPUBDoc {
 			}
 		}
 		zis.close();
+		int nt=getSpineIndex(entName);
+		if(nt>=0)
+			lastServedSpine=nt;
 		return new ByteArrayInputStream(baos.toByteArray());
+	}
+	
+	public int getSpineIndex(String ent){
+		ent=ent.substring(opfDir.length());
+		String id=itemsHR_ID.get(ent);
+		if(id==null)
+			return -1;
+		return spines.indexOf(id);
 	}
 	
 	public int getNumOfDocs(){
 		return spines.size();
 	}
-	
+
+	int lastServedSpine=-1;
 	public InputStream getInputStream(int i) throws IOException{
 		if(i<0||i>=getNumOfDocs())
 			return null;
+		lastServedSpine=i;
 		return getInputStream(itemsID_HR.get(spines.elementAt(i)));
 	}
 	
-	public InputStream getInputStream() throws IOException{
-		ByteArrayOutputStream baos=new ByteArrayOutputStream();
-		for(int i=0;i<spines.size();i++){
-			Utils.writeTo(getInputStream(i), baos);
-		}
-		return new ByteArrayInputStream(baos.toByteArray());
+	public int getLastServedSpine(){
+		return lastServedSpine;
+	}
+	
+	public String getRootURL(){
+		return getURLForSpine(0);
+	}
+	
+	public String getURLForSpine(int i){
+		return toEPUBUrl(epubFile)+opfDir+itemsID_HR.get(spines.get(i));
 	}
 }
 

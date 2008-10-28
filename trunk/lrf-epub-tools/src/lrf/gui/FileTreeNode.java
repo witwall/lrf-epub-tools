@@ -26,7 +26,7 @@ import java.io.File;
  * <code>FileTree</code>.
  * @author Arash Payan (http://www.arashpayan.com)
  */
-public class FileTreeNode {
+public class FileTreeNode extends BaseNode {
     
     /**
      * Creates a new instance of FileTreeNode
@@ -70,10 +70,6 @@ public class FileTreeNode {
         return name;
     }
 
-    /**
-     * the object being represented
-     */
-    public File file;
     /**
      * the hex string that represents 'My Computer' in Windows
      */

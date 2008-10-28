@@ -6,28 +6,18 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Hashtable;
 
 public class UrlConnection extends URLConnection {
-	public static Hashtable<String, EPUBDoc> books=new Hashtable<String, EPUBDoc>();
 	String inside;
-	String name;
-	protected UrlConnection(URL url) throws MalformedURLException {
+	File epubFile;
+	protected UrlConnection(URL url) throws IOException {
 		super(url);
-		String aux=url.getPath();
+		String aux=url.getPath().replace("%20"," ");
 		int pos=aux.toLowerCase().indexOf(".epub/");
 		if(pos<0)
 			throw new MalformedURLException(url.toString());
-		name=aux.substring(0,pos+5);
-		EPUBDoc epd=books.get(name);
-		if(epd==null){
-			try {
-				epd=new EPUBDoc(new File(name));
-				books.put(name, epd);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		epubFile=new File(aux.substring(0,pos+5));
+		EPUBDoc epd=EPUBDoc.load(epubFile);
 		if(pos+6>=aux.length()){
 			String ref=url.getRef();
 			if(ref!=null){
@@ -41,7 +31,6 @@ public class UrlConnection extends URLConnection {
 		}else{
 			inside=aux.substring(pos+6);
 		}
-		inside=epd.getOPFDir()+inside;
 	}
 
 	@Override
@@ -52,12 +41,12 @@ public class UrlConnection extends URLConnection {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		return books.get(name).getInputStream(inside);
+		return EPUBDoc.load(epubFile).getInputStream(inside);
 	}
 
 	@Override
 	public int getContentLength() {
-		return books.get(name).getNumOfDocs();
+		return EPUBDoc.load(epubFile).getNumOfDocs();
 	}
 
 }
