@@ -37,8 +37,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import lrf.epub.EPUBDoc;
-
 /**
  * A handy little class that displays the system filesystem in a tree view.
  * @author Arash Payan (http://www.arashpayan.com)
@@ -52,14 +50,14 @@ public class FileTree extends JTree {
 
 	SelListener tslInstance;
 
+	
 	/** Creates a new instance of FileTree */
     public FileTree() {
         super(new DefaultTreeModel(new DefaultMutableTreeNode("root")));
         fileTreeModel = (DefaultTreeModel)treeModel;
         showHiddenFiles = false;
         showFiles = true;
-        navigateOSXApps = false;
-        
+        navigateOSXApps = false;    
         initComponents();
         initListeners();
     }
@@ -133,11 +131,13 @@ public class FileTree extends JTree {
             public void treeCollapsed(TreeExpansionEvent event) {
             }
             public void treeExpanded(TreeExpansionEvent event) {
+            	CursorMgr.setWaitCursor();
                 TreePath path = event.getPath();
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
                 treeNode.removeAllChildren();
                 populateSubTree(treeNode);
                 fileTreeModel.nodeStructureChanged(treeNode);
+                CursorMgr.releaseWaitCursor();
             }
         });
         
@@ -504,8 +504,15 @@ public class FileTree extends JTree {
     class SelListener extends Observable implements TreeSelectionListener {
     	@Override
     	public void valueChanged(TreeSelectionEvent e) {
-    		DefaultMutableTreeNode dmto=
-    			(DefaultMutableTreeNode)e.getNewLeadSelectionPath().getLastPathComponent();
+    		DefaultMutableTreeNode dmto=null;
+    		if(e==null)
+    			return;
+    		TreePath tp1=e.getNewLeadSelectionPath();
+    		if(tp1==null)
+    			return;
+    		dmto=(DefaultMutableTreeNode)tp1.getLastPathComponent();
+    		if(dmto==null)
+    			return;
     		Object obj=dmto.getUserObject();
     		if(obj instanceof EPUBTreeNode){
     			EPUBTreeNode eptn=(EPUBTreeNode)obj;

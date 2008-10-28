@@ -1,5 +1,6 @@
 package lrf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -87,6 +88,12 @@ public class Utils {
 		}
 	}
 
+	public static byte[] getResourceAsByteArray(String rsName) throws IOException{
+		ByteArrayOutputStream baos=new ByteArrayOutputStream();
+		writeTo("".getClass().getResourceAsStream(rsName),baos);
+		return baos.toByteArray();
+	}
+	
 	public static String surroundWithQuotes(String style, String tgt) {
 		int pos=style.indexOf(tgt);
 		if(pos>=0){
