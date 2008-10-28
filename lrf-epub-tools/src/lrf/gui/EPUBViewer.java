@@ -1,10 +1,14 @@
 package lrf.gui;
 import com.cloudgarden.resource.ArrayFocusTraversalPolicy;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.io.File;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -12,7 +16,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import lrf.epub.EPUBDoc;
-
+import org.jdesktop.application.Application;
+import org.xhtmlrenderer.css.parser.property.PrimitivePropertyBuilders.CaptionSide;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -26,8 +31,9 @@ import lrf.epub.EPUBDoc;
 * THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
 * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
 */
-public class EPUBViewer extends javax.swing.JFrame implements Observer {
+public class EPUBViewer extends JFrame implements Observer {
 	private JScrollPane jScrollPane1;
+	private JMenu jMenu1;
 	private EPUBScrollToolbarPanel ePUBScrollToolbarPanel1;
 	private JPanel jPanel1;
 	private FileTree fileTree1;
@@ -50,6 +56,7 @@ public class EPUBViewer extends javax.swing.JFrame implements Observer {
 		super();
 		initGUI();
 	    fileTree1.getObservable().addObserver(this);
+	    CursorMgr.container=this;
 }
 	
 	private void initGUI() {
@@ -83,15 +90,21 @@ public class EPUBViewer extends javax.swing.JFrame implements Observer {
 					{
 						ePUBScrollToolbarPanel1 = new EPUBScrollToolbarPanel();
 						jPanel1.add(ePUBScrollToolbarPanel1, BorderLayout.CENTER);
-						ePUBScrollToolbarPanel1.setPreferredSize(new java.awt.Dimension(300, 300));
+						ePUBScrollToolbarPanel1.setPreferredSize(new java.awt.Dimension(475, 240));
 					}
 				}
 				jSplitPane1.setFocusCycleRoot(true);
 				jSplitPane1.setFocusTraversalPolicy(new ArrayFocusTraversalPolicy(new java.awt.Component[] {jScrollPane1, jPanel1}));
 				jSplitPane1.setMinimumSize(new java.awt.Dimension(650, 50));
 			}
+			{
+				jMenu1 = new JMenu();
+				getContentPane().add(jMenu1, BorderLayout.NORTH);
+				jMenu1.setName("jMenu1");
+			}
 			pack();
 			this.setSize(650, 300);
+			Application.getInstance().getContext().getResourceMap(getClass()).injectComponents(getContentPane());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -99,20 +112,23 @@ public class EPUBViewer extends javax.swing.JFrame implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		try {
+			CursorMgr.setWaitCursor();
 			File f=fileTree1.epubToShow;
-			EPUBDoc doc=EPUBDoc.load(f);
+			EPUBDoc epb=EPUBDoc.load(f);
 			String app=fileTree1.linkInsideEpub;
 			String uri;
 			if(app==null || app.length()==0){
-				uri=doc.getRootURL();
+				uri=epb.getRootURL();
 			}else{
 				uri=EPUBDoc.toEPUBUrl(f)+app;
 			}
+			setTitle(epb.getAutor()+":"+epb.getTitle());
 			ePUBScrollToolbarPanel1.setDocument(uri);
+			CursorMgr.releaseWaitCursor();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
+	
 }
