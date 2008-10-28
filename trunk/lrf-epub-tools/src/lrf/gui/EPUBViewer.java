@@ -1,14 +1,11 @@
 package lrf.gui;
-import com.cloudgarden.resource.ArrayFocusTraversalPolicy;
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.io.File;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -16,8 +13,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import lrf.epub.EPUBDoc;
+
 import org.jdesktop.application.Application;
-import org.xhtmlrenderer.css.parser.property.PrimitivePropertyBuilders.CaptionSide;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -32,10 +29,10 @@ import org.xhtmlrenderer.css.parser.property.PrimitivePropertyBuilders.CaptionSi
 * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
 */
 public class EPUBViewer extends JFrame implements Observer {
-	private JScrollPane jScrollPane1;
 	private JMenu jMenu1;
 	private EPUBScrollToolbarPanel ePUBScrollToolbarPanel1;
 	private JPanel jPanel1;
+	private JScrollPane jScrollPane1;
 	private FileTree fileTree1;
 	private JSplitPane jSplitPane1;
 
@@ -68,20 +65,6 @@ public class EPUBViewer extends JFrame implements Observer {
 				jSplitPane1 = new JSplitPane();
 				getContentPane().add(jSplitPane1, BorderLayout.CENTER);
 				{
-					jScrollPane1 = new JScrollPane();
-					jSplitPane1.add(jScrollPane1, JSplitPane.LEFT);
-					jScrollPane1.setPreferredSize(new java.awt.Dimension(300, 258));
-					jScrollPane1.setMinimumSize(new java.awt.Dimension(300, 50));
-					{
-						fileTree1 = new FileTree();
-						jScrollPane1.setViewportView(fileTree1);
-						fileTree1.setPreferredSize(new java.awt.Dimension(300, 257));
-						fileTree1.setMinimumSize(new java.awt.Dimension(300, 50));
-						fileTree1.setMaximumSize(new java.awt.Dimension(600, 800));
-						fileTree1.setSize(300, 1116);
-					}
-				}
-				{
 					jPanel1 = new JPanel();
 					BorderLayout jPanel1Layout = new BorderLayout();
 					jSplitPane1.add(jPanel1, JSplitPane.RIGHT);
@@ -93,8 +76,17 @@ public class EPUBViewer extends JFrame implements Observer {
 						ePUBScrollToolbarPanel1.setPreferredSize(new java.awt.Dimension(475, 240));
 					}
 				}
+				{
+					jScrollPane1 = new JScrollPane();
+					jSplitPane1.add(jScrollPane1, JSplitPane.LEFT);
+					jScrollPane1.setPreferredSize(new java.awt.Dimension(287, 240));
+					jScrollPane1.setMinimumSize(new java.awt.Dimension(287, 22));
+					{
+						fileTree1 = new FileTree();
+						jScrollPane1.setViewportView(fileTree1);
+					}
+				}
 				jSplitPane1.setFocusCycleRoot(true);
-				jSplitPane1.setFocusTraversalPolicy(new ArrayFocusTraversalPolicy(new java.awt.Component[] {jScrollPane1, jPanel1}));
 				jSplitPane1.setMinimumSize(new java.awt.Dimension(650, 50));
 			}
 			{
