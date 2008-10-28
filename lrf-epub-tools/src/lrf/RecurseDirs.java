@@ -101,15 +101,6 @@ public class RecurseDirs {
 
 	private boolean viewActionParams(String[] args) throws Exception {
 		boolean done;
-		for (int i = 1; i < args.length; i++) {
-			if (i == 1) {
-				root = new File(args[i]);
-				continue;
-			}
-		}
-		if (root == null) {
-			UsageAndExit();
-		}
 		EPUBViewer.main(args);
 		done=true;
 		return done;

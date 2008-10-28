@@ -25,9 +25,9 @@ Actions:
  
  You cannot output HTML files to a zipfile right now.
 	
- 2) view filename.epub
+ 2) view
  
- Shows a panel preview with epub. Very preliminar, but full support of CSS 2.1
+ Shows GUI to view epub files.
   
  3) updfmd  dir
 
