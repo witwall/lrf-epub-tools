@@ -23,7 +23,11 @@ import javax.swing.JLabel;
 * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
 */
 public class FontSelector extends javax.swing.JPanel implements  ItemListener  {
-    JComboBox fonts;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4950410185516025989L;
+	JComboBox fonts;
     String fontChoice = "Dialog";
     int styleChoice = 0;
     int sizeChoice = 12;
