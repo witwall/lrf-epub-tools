@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import lrf.conv.BaseRenderer;
@@ -15,12 +17,13 @@ import lrf.epub.EPUBMetaData;
 import lrf.objects.tags.Tag;
 
 import com.lowagie.text.Image;
+import com.sun.jmx.snmp.Enumerated;
 
 public class HtmlDoc implements EPUBEntity{
 	public String title,fNam,auth,id,producer;
 	public File tmp;
 	public int numIm=0;
-	public Vector<String> imagenes=new Vector<String>();
+	public Hashtable<Integer,String> imagenes=new Hashtable<Integer,String>();
 	ByteArrayOutputStream bos;
 	PrintWriter pw;
 	Vector<String> emits=new Vector<String>();
@@ -145,19 +148,31 @@ public class HtmlDoc implements EPUBEntity{
 		emits.add(Emitter.head(auth, id, title, fNam+".css")+"\n");
 	}
 
-	public void addImage(Image im, String ext, byte[] b)
+	public void addImage(int id, Image im, String ext, byte[] b)
 			throws Exception {
-		numIm++;
-		FileOutputStream fosi=new FileOutputStream(new File(tmp,""+numIm));
-		fosi.write(b);
-		fosi.close();
-		imagenes.add(fNam+numIm+ext);
+		String imgfn=imagenes.get(id);
+		if(imgfn==null){
+			numIm++;
+			imgfn=fNam+numIm+ext;
+			FileOutputStream fosi=new FileOutputStream(new File(tmp,""+numIm));
+			fosi.write(b);
+			fosi.close();
+			imagenes.put(id,imgfn);
+		}
 		closeDiv();
-		emits.add(Emitter.img(fNam+numIm+ext,fNam+numIm,""+im.getWidth(),""+im.getHeight())+"\n");
+		emits.add(
+				Emitter.img(
+						imgfn,
+						imgfn.substring(0,imgfn.length()-ext.length()),
+						""+im.getWidth(),""+im.getHeight())+"\n");
 	}
 	
 	public Vector<String> getImagenes(){
-		return imagenes;
+		Vector<String>ret=new Vector<String>();
+		for(Enumeration<String>enu=imagenes.elements();enu.hasMoreElements();){
+			ret.add(enu.nextElement());
+		}
+		return ret;
 	}
 	
 	public void createEPUB(EPUBMetaData e, String catpar) {
@@ -210,10 +225,12 @@ public class HtmlDoc implements EPUBEntity{
 			//Esto es innecesario
 			//e.addFile(fileName+".html", fnh, 5);
 			//Las imagenes
-			for(int i=0;i<numIm;i++){
+			int i=0;
+			for(Enumeration<String> enu=imagenes.elements();enu.hasMoreElements();){
+				String imgfn=enu.nextElement();
 				e.processFile(
-						new FileInputStream(new File(tmp,""+(1+i))), 
-						"images/"+imagenes.elementAt(i));
+						new FileInputStream(new File(tmp,""+(++i))), 
+						"images/"+imgfn);
 			}
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
