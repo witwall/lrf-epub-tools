@@ -12,7 +12,7 @@ public class UrlConnection extends URLConnection {
 	File epubFile;
 	protected UrlConnection(URL url) throws IOException {
 		super(url);
-		String aux=url.getPath().replace("%20"," ");
+		String aux=url.getAuthority()+url.getPath().replace("%20"," ");
 		int pos=aux.toLowerCase().indexOf(".epub/");
 		if(pos<0)
 			throw new MalformedURLException(url.toString());
