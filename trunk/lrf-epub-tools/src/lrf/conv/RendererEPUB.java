@@ -45,9 +45,9 @@ public class RendererEPUB extends BaseRenderer {
 	}
 
 	@Override
-	public void addImage(Image im, String ext, byte[] b)
+	public void addImage(int id, Image im, String ext, byte[] b)
 			throws Exception {
-		doc.addImage(im, ext, b);
+		doc.addImage(id, im, ext, b);
 	}
 
 	@Override

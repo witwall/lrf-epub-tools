@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -36,7 +37,7 @@ public class RendererIText extends BaseRenderer {
 	public final static float yconv= 116.58F * 2.84F / 800F;
 	private Document doc;
 	public Font fu = null;
-	Vector<String> imagenes=new Vector<String>();
+	Hashtable<Integer,String> imagenes=new Hashtable<Integer,String>();
 	public File imagesDir = null;
 	String imgPath;
 	public int numImages = 0;
@@ -58,9 +59,9 @@ public class RendererIText extends BaseRenderer {
 	/* (non-Javadoc)
 	 * @see lrf.conv.Renderer#addImage(com.lowagie.text.Image, java.lang.String, byte[])
 	 */
-	public void addImage(Image img, String extension, byte[] b) throws Exception{
+	public void addImage(int id, Image img, String extension, byte[] b) throws Exception{
 		if(pw instanceof HtmlWriter){
-			dumpImage(extension, b);
+			dumpImage(id,extension, b);
 		}else{
 			doc.add(img);
 		}
@@ -108,30 +109,35 @@ public class RendererIText extends BaseRenderer {
 	/* (non-Javadoc)
 	 * @see lrf.conv.Renderer#dumpImage(java.lang.String, byte[])
 	 */
-	public void dumpImage(String ext, byte[] b) throws Exception {
-		numImages++;
-		String imgURL=imagesDir.getCanonicalPath()+File.separator+(numImages)+ext;
-		if(RecurseDirs.zout!=null){
-			throw new DocumentException("convert to html does not support zipfile");
-		}else{
-			if(!imagesDir.exists())
-				imagesDir.mkdirs();
-			if(!imagesDir.isDirectory())
-				throw new DocumentException(imagesDir.getAbsolutePath()+ "is not a directory");
-			FileOutputStream fosi=new FileOutputStream(new File(imgURL));
-			fosi.write(b);
-			fosi.close();
+	public void dumpImage(int id, String ext, byte[] b) throws Exception {
+		String imgURL=imagenes.get(id);
+		if(imgURL==null){
+			numImages++;
+			imgURL=File.separator+(numImages)+ext;
+			if(RecurseDirs.zout!=null){
+				throw new DocumentException("convert to html does not support zipfile");
+			}else{
+				if(!imagesDir.exists())
+					imagesDir.mkdirs();
+				if(!imagesDir.isDirectory())
+					throw new DocumentException(imagesDir.getAbsolutePath()+ "is not a directory");
+				FileOutputStream fosi=new FileOutputStream(
+						new File(imagesDir.getCanonicalFile()+imgURL));
+				fosi.write(b);
+				fosi.close();
+			}
 		}
-		com.lowagie.text.Image img=com.lowagie.text.Image.getInstance(imgURL);
+		com.lowagie.text.Image img=
+			com.lowagie.text.Image.getInstance(imagesDir.getCanonicalFile()+imgURL);
 		if(img.getAlt()==null || img.getAlt().length()==0)
-			img.setAlt(imgPath+(numImages)+ext);
+			img.setAlt(imgURL);
 		URL turl=new URL("file:"+imgPath+(numImages)+ext);
 		img.setUrl(turl);
 		Paragraph pgp=new Paragraph();
 		pgp.setAlignment(Paragraph.ALIGN_CENTER);
 		pgp.add(img);
 		doc.add(pgp);
-		imagenes.add(imgURL);
+		imagenes.put(id,imgURL);
 	}
 
 	/* (non-Javadoc)
@@ -211,7 +217,11 @@ public class RendererIText extends BaseRenderer {
 	 * @see lrf.conv.Renderer#getImages()
 	 */
 	public Vector<String> getImages(){
-		return imagenes;
+		Vector<String>ret=new Vector<String>();
+		for(Enumeration<String>enu=imagenes.elements();enu.hasMoreElements();){
+			ret.add(enu.nextElement());
+		}
+		return ret;
 	}
 
 	/* (non-Javadoc)

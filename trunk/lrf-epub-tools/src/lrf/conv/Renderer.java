@@ -51,7 +51,7 @@ public interface Renderer {
 
 	public void resetHeaders();
 
-	public void addImage(Image img, String extension, byte[] b)
+	public void addImage(int id, Image img, String extension, byte[] b)
 			throws Exception;
 	
 	public boolean isHeader();

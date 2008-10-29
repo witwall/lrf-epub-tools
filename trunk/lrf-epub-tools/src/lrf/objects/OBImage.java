@@ -24,10 +24,12 @@ public class OBImage extends BBObj {
 		float wi = 0, he = 0;
 		String extension = null;
 		byte b[] = null;
+		int tagStreamID=0;
 		for (int i = 0; i < getTags().size(); i++) {
 			Tag tag = getTags().elementAt(i);
 			if (tag.getName().equals("*ImageStream")) {
 				BBObj isObject = padre.getObject(tag.getValueAt(0));
+				tagStreamID=isObject.id;
 				TagStream isTag = (TagStream) isObject.getTagAt(0);
 				b = isTag.getBytes();
 				if (isTag.imageType.equals(".jpg")) {
@@ -56,7 +58,7 @@ public class OBImage extends BBObj {
 		if (img != null) {
 			img.scaleToFit(wi / 2.5F, he / 2.5F);
 			img.setAlignment(Image.MIDDLE + Image.TEXTWRAP);
-			pars.addImage(img, extension, b);
+			pars.addImage(tagStreamID, img, extension, b);
 		}
 	}
 
