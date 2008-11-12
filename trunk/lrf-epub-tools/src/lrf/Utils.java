@@ -24,7 +24,7 @@ public class Utils {
 		app=app.replace("\"", "&quot;");
 		app=app.replace("“", "&quot;");
 		app=app.replace("”", "&quot;");
-		app=app.replace("&", "&amp;");
+		app=app.replace(" & ", " &amp; ");
 		app=app.replace("<", "&lt;");
 		app=app.replace(">", "&gt;");
 		app=app.replace("’", "&apos;");

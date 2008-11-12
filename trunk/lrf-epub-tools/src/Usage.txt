@@ -5,7 +5,7 @@ Note: Java VM gets 200MB minimun, 300 maximun memory to work. If you plan to
 convert only a few books, you can reduce significantly these values (40,60).
 
 Actions:
- 1) convert dir [-d dirOut |-z zipfile] [-XML|-PDF|-RTF|-HTML|-EPUB] [options]
+ 1) convertLRF dir [-d dirOut |-z zipfile] [-XML|-PDF|-RTF|-HTML|-EPUB] [options]
 	
  Converts to XML, PDF, RTF and/or HTML every LRF file in 'dir' recursively. 
  You can specify more than one format conversion simultaneously.
@@ -24,24 +24,31 @@ Actions:
  -nopb: Do not emit page breaks.
  
  You cannot output HTML files to a zipfile right now.
+
+ 2) convertPDF dir [-d dirOut] [-noo]
+ 
+  Converts every PDF in 'dir' (with recursion) to EPUB format. Right now
+  the conversion is performed creating a SVG (Scalable Vector Graphics) for
+  each page, supported by the EPUB specification. I'm working to create a 
+  PDF to XHTML version to allow font sizes to be resized on the device.
 	
- 2) view
+ 3) view
  
  Shows GUI to view epub files.
   
- 3) updfmd  dir
+ 4) updfmd  dir
 
  Search dir recursively, expecting PDF filenames 'BookAuthor-BookTitle.pdf' 
  and modifies metadata of PDF to reflect BookAuthor and BookTitle so our 
  Sony PRS can catalog the book conveniently.
 	
- 4) mergePDF dir -o grouped.pdf
+ 5) mergePDF dir -o grouped.pdf
 
  Merge all PDF and LRF files contained at dir (with recursion) into one new 
  PDF file with a TOC pointing to each old single document. LRF files are 
  converted first to PDF.
  
- 5) mergeEPUB dir -o grouped.epub
+ 6) mergeEPUB dir -o grouped.epub
  
  Merge all EPUB files contained at dir (with recursion) into one new EPUB 
  file with a TOC pointing to each old single document.

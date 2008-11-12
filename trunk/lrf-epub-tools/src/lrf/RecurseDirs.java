@@ -18,6 +18,7 @@ import lrf.merge.MergeEPUBAndTOC;
 import lrf.merge.MergePDFAndTOC;
 import lrf.objects.Book;
 import lrf.objects.tags.Tag;
+import lrf.pdf.PDF2SVG;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
@@ -81,8 +82,10 @@ public class RecurseDirs {
 		action = args[0];
 		boolean done=false;
 		try {
-			if (action.equalsIgnoreCase("convert")) {
+			if (action.equalsIgnoreCase("convertLRF")) {
 				done = convertActionParams(args);
+			}else if (action.equalsIgnoreCase("convertPDF")){
+				done = convertPDFActionParams(args);
 			}else if (action.equalsIgnoreCase("view")){
 				done = viewActionParams(args);
 			}else if(action.equalsIgnoreCase("updfmd")){
@@ -191,6 +194,32 @@ public class RecurseDirs {
 		return done;
 	}
 
+	private boolean convertPDFActionParams(String[] args){
+		File dirOut=null;
+		for (int i = 1; i < args.length; i++) {
+			if (i == 1) {
+				root = new File(args[i]);
+				continue;
+			}
+			if (args[i].equalsIgnoreCase("-d")){
+				dirOut = new File(args[++i]);
+				if(dirOut.exists() && !dirOut.isDirectory()){
+					throw new RuntimeException(args[i]+" is not a directory.");
+				}
+				if(!dirOut.exists())
+					dirOut.mkdirs();
+				continue;
+			}
+			if (args[i].equalsIgnoreCase("-noo"))
+				noo = true;
+		}
+		PDF2SVG.dirDest=dirOut;
+		PDF2SVG.dirOrig=root;
+		PDF2SVG.noo=noo;
+		PDF2SVG.recurse(root);
+		return true;
+	}
+	
 	private boolean convertActionParams(String[] args) throws FileNotFoundException,
 			Exception, IOException {
 		boolean done;

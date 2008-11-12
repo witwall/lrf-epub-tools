@@ -1,5 +1,6 @@
 package lrf.pdf;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
@@ -17,34 +18,374 @@ import java.awt.RenderingHints.Key;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ImageObserver;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.RenderableImage;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.AttributedCharacterIterator;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Vector;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+
+import lrf.Utils;
+import lrf.base64.Base64;
 
 public class GraphicsHook extends Graphics2D {
-	private ByteArrayOutputStream baos=new ByteArrayOutputStream();
-	private PrintWriter pw=new PrintWriter(baos);
+	private OutputStream os;
+	private PrintWriter pw;
+	
+	public GraphicsHook(){
+		os=new ByteArrayOutputStream();
+		pw=new PrintWriter(os);
+		init();
+	}
+	public GraphicsHook(OutputStream o){
+		os=o;
+		pw=new PrintWriter(os);
+		init();
+	}
+	private void init(){
+		pw.println("<pdf>");
+	}
+	public void close(){
+		managePieces();
+		pw.print("</page>\n</pdf>\n");
+		pw.close();
+	}
+	public OutputStream getOS(){
+		return os;
+	}
+	
+	class Piece {
+		private float x,y;
+		Rectangle2D rect;
+		Piece next;
+		public Piece(float x, float y, Rectangle2D r){
+			this.x=x;
+			this.y=y;
+			this.rect=r;
+		}
+		public float getX(){
+			return (float)(x+rect.getX());
+		}
+		public float getY(){
+			return (float)(y+rect.getY());
+		}
+		public float getWidth(){
+			return (float)rect.getWidth();
+		}
+		public float getHeight(){
+			return (float)rect.getHeight();
+		}
+		public void append(Piece p){
+			Piece last=this;
+			while(last.next!=null){
+				last=last.next;
+			}
+			last.next=p;
+		}
+	}
+	
+	/**
+	 * Representa un texto en una posicion con una metrica determinada
+	 * Debe guardar informacion del estado de todos los estilos involucrados
+	 * Mantiene informacion de con qué otros textos está unido por los 
+	 * puntos cardinales.
+	 * En general se desecharan los textos que no vayan unidos al menos a otro
+	 * texto, para evitar mostrar headers y footers.
+	 * @author elinares
+	 *
+	 */
+	class TextPiece extends Piece {
+		String txt;
+		Font font;
+		Color color;
+		public TextPiece(float x, float y, String txt){
+			super(x,y,_font.getStringBounds(txt, getFontRenderContext()));
+			font=_font;
+			color=_color;
+			this.txt=txt;
+		}
+		public String getStyle(){
+			String ret="style=\"font-family:"+font.getFamily()+";";
+			ret+="font-size: "+font.getSize()+"em;";
+			if(font.isItalic())
+				ret+="font-style:italic;";
+			if(font.isBold())
+				ret+="font-weight:bold;";
+			ret+="color:{"+color.getRed()+","+color.getGreen()+","+color.getBlue()+"};";
+			ret+="\"";
+			return ret;
+		}
+		public String getText(){
+			String r=txt;
+			TextPiece c=(TextPiece)next;
+			while(c!=null){
+				r+=c.txt;
+				c=(TextPiece)c.next;
+			}
+			return r;
+		}
+	}
+	
+	class ImagePiece extends Piece {
+		public ImagePiece(float x, float y, Image img){
+			//TODO Hay que tener en cuenta affinetransform
+			super(0,0,new Rectangle2D.Float(x,y,img.getWidth(null),img.getHeight(null)));
+		}
+	}
+	Hashtable<Float, Hashtable<Float, Piece>> yOccurences=
+		new Hashtable<Float, Hashtable<Float,Piece>>();
+	
+	Hashtable<Float, Hashtable<Float, Piece>> xOccurences=
+		new Hashtable<Float, Hashtable<Float,Piece>>();
+
+	public void addPiece(Piece p){
+		Hashtable<Float, Piece> yxPos=yOccurences.get(p.getY());
+		if(yxPos==null){
+			yxPos=new Hashtable<Float, Piece>();
+			yOccurences.put(p.getY(), yxPos);
+		}
+		yxPos.put(p.getX(), p);
+		//Ahora con la X
+		Hashtable<Float, Piece> xyPos=xOccurences.get(p.getX());
+		if(xyPos==null){
+			xyPos=new Hashtable<Float, Piece>();
+			xOccurences.put(p.getX(), xyPos);
+		}
+		xyPos.put(p.getY(), p);
+	}
+	
+	private void managePieces(){
+		Hashtable<Float,Piece> renglones=new Hashtable<Float, Piece>();
+		//Ordenamos y unimos en 'y'
+		TreeSet<Float> ys=new TreeSet<Float>();
+		ys.addAll(yOccurences.keySet());
+		Vector<Float> minx=new Vector<Float>();
+		for(Iterator<Float> it=ys.iterator();it.hasNext();){
+			Float renglon=it.next();
+			TreeSet<Float> xs=new TreeSet<Float>();
+			Hashtable<Float, Piece> ytp=yOccurences.get(renglon);
+			xs.addAll(ytp.keySet());
+			boolean first=true;
+			for(Iterator<Float> i2=xs.iterator();i2.hasNext();){
+				float cx=i2.next();
+				if(first){
+					first=false;
+					minx.add(cx);
+				}
+				Piece p=ytp.get(cx);
+				Piece ap=renglones.get(renglon);
+				if(ap==null){
+					renglones.put(renglon, p);
+				}else if(p instanceof TextPiece){
+					if(p!=ap){
+						//TODO Comprobar que la distancia en X es correcta
+						ap.append(p);
+					}
+				}else if(p instanceof ImagePiece){
+					
+				}
+			}
+		}
+		TreeSet<Float> sortered=new TreeSet<Float>();
+		sortered.addAll(renglones.keySet());
+		po("items",1);
+		int px=0;
+		for(Iterator<Float> it=sortered.iterator();it.hasNext();){
+			float y=it.next();
+			Piece p=renglones.get(y);
+			if(p instanceof TextPiece){
+				TextPiece tp=(TextPiece)p;
+				pStr(2,"p",tp.getStyle(),tp.getText(),minx.elementAt(px++),y);
+			}else if(p instanceof ImagePiece){
+				pStr(2,"imag"," imagen "+p.getWidth()+" "+p.getHeight(),minx.elementAt(px++),y);
+			}
+		}
+		pc("items",1);
+		//Reset
+		yOccurences=new Hashtable<Float, Hashtable<Float,Piece>>();
+	}
+	
+	
+	public void error(String s){
+		pw.println(" <error txt=\""+s+"\"/>");
+	}
+
+	int pageNumber=1;
+	public void newPage(){
+		managePieces();
+		if(pageNumber==1){
+			pw.println("</page>");
+			pw.println("<page number=\""+pageNumber+++"\">");
+		}else{
+			pw.println("<page number=\""+pageNumber+++"\">");
+		}
+	}
+	
+	public void pf(Font f,int lev){
+		pl(lev);
+		pw.print("<font name=\""+f.getFontName()+"\"");
+		pw.print(" size=\""+f.getSize()+"\"");
+		if(f.isBold())
+			pw.print(" bold=\"true\"");
+		if(f.isItalic())
+			pw.print(" italic=\"true\"");
+		pw.println("/>");
+	}
+	
+	public String pathIter(double[] val, int sz){
+		String ret="";
+		for(int i=0;i<sz;i++){
+			ret+="x"+(i+1)+"=\""+val[i*2]+"\" y"+(i+1)+"=\""+val[1+i*2]+"\"";
+		}
+		return ret;
+	}
+	
+	public void pShape(String cmd, Shape s){
+		pw.println(" <"+cmd+">");
+		pw.println("  <shape>");
+		if(s!=null){
+		PathIterator pi=s.getPathIterator(null);
+		while(!pi.isDone()){
+			double ret[]=new double[6];
+			switch(pi.currentSegment(ret)){
+			case PathIterator.SEG_CLOSE:
+				pw.println("   <close/>");
+				break;
+			case PathIterator.SEG_CUBICTO:
+				pw.println("   <cubicto "+pathIter(ret, 3)+"/>");
+				break;
+			case PathIterator.SEG_LINETO:
+				pw.println("   <lineto "+pathIter(ret, 1)+"/>");
+				break;
+			case PathIterator.SEG_MOVETO:
+				pw.println("   <moveto "+pathIter(ret, 1)+"/>");
+				break;
+			case PathIterator.SEG_QUADTO:
+				pw.println("   <quadto "+pathIter(ret, 2)+"/>");
+				break;
+			}
+			pi.next();
+		}
+		}
+		pw.println("  </shape>");
+		pw.println(" </"+cmd+">");
+	}
 	
 	public void p(String s, int... v){
-		pw.print(s);
-		for(int i=0;i<v.length;i++)
-			pw.print(" "+v[i]);
-		pw.print("\n");
+		pw.print(" <"+s);
+		for(int i=0;i<v.length;i++){
+			pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+		}
+		pw.print("/>\n");
+	}
+
+	public void p(int lev, String s, int... v){
+		pl(lev);
+		p(s,v);
+	}
+	
+	public void pStr(int lev, String s, String c, float... v){
+		pl(lev);
+		pw.print("<"+s);
+		for(int i=0;i<v.length;i++){
+			pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+		}
+		pw.print(">"+Utils.toXMLText(c)+"</"+s+">\n");
+	}
+
+	public void pStr(int lev, String s, String at, String c, float... v){
+		pl(lev);
+		pw.print("<"+s+" "+at);
+		for(int i=0;i<v.length;i++){
+			pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+		}
+		pw.print(">"+c+"</"+s+">\n");
+	}
+	public void pKV(String s, String k, String v, int lev){
+		pl(lev);
+		pw.println("<"+s+" key=\""+k+"\" value=\""+v+"\"/>");
 	}
 
 	public void q(String s, double... v){
-		pw.print(s);
-		for(int i=0;i<v.length;i++)
-			pw.print(" "+v[i]);
-		pw.print("\n");
+		pw.print(" <"+s);
+		if(v!=null)
+			for(int i=0;i<v.length;i++)
+				pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+		pw.print("/>\n");
 	}
 
+	public void qf(String s, float... v){
+		pw.print(" <"+s);
+		if(v!=null)
+			for(int i=0;i<v.length;i++)
+				pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+		pw.print("/>\n");
+	}
+
+	public void qf(String s, int lev, float... v){
+		pl(lev);
+		qf(s,v);
+	}
+	
+	public void qf2(String s, int lev, float v){
+		pl(lev);
+		qf(s,v);
+	}
+
+	public void pa(AffineTransform at, int lev){
+		if(at==null)
+			return;
+		pl(lev);
+		pw.println("<affineTx>"+at.toString()+"</affineTx>");
+	}
+	
+	public void pl(int lev){
+		for(int i=0;i<lev;i++)
+			pw.print(" ");
+	}
+	
+	public void po(String s,int lev){
+		pl(lev);
+		pw.println("<"+s+">");
+	}
+	
+	public void pc(String s, int lev){
+		pl(lev);
+		pw.println("</"+s+">");
+	}
+	
+	public void pi(double x, double y, Image img, Integer bgColor, int lev) throws IOException {
+		pl(lev);
+		int h=img.getHeight(null);
+		int w=img.getWidth(null);
+		String s="Image type=\"png\" x=\""+x+"\" y=\""+y+"\" h=\""+h+"\" w=\""+w+"\"";
+		if(bgColor!=null)
+			po(s+" bgColor=\""+bgColor.intValue()+"\"",1);
+		else
+			po(s,1);
+		byte bs[]=toFormat(img, "png");
+		pw.println(Base64.encodeBytes(bs));
+		pc("Image",2);
+		addPiece(new ImagePiece((float)x,(float)y,img));
+	}
+	
 	@Override
 	public void clearRect(int x, int y, int width, int height) {
 		p("clearRect",x,y,width,height);
@@ -63,7 +404,7 @@ public class GraphicsHook extends Graphics2D {
 	@Override
 	public Graphics create() {
 		p("create");
-		return null;
+		return new GraphicsHook();
 	}
 
 	@Override
@@ -79,15 +420,21 @@ public class GraphicsHook extends Graphics2D {
 
 	@Override
 	public boolean drawImage(Image img, int x, int y, ImageObserver observer) {
-		p("drawImage-ImageObserver",x,y);
+		drawImage(img,new AffineTransform(1f,0f,0f,1f,x,y),observer);
 		return true;
 	}
 
 	@Override
-	public boolean drawImage(Image img, int x, int y, Color bgcolor,
-			ImageObserver observer) {
-		p("drawImage-bgColor-ImageObserver",x,y);
-		return true;
+	public boolean drawImage(Image img, int x, int y, Color bgcolor, ImageObserver observer) {
+		po("drawImage", 1);
+		pa(new AffineTransform(1f,0f,0f,1f,x,y),2);
+		try {
+			pi(x,y,img,bgcolor.getRGB(),2);
+		}catch(IOException e){
+			p("Error");
+		}
+		pc("drawImage", 1);
+		return false;
 	}
 
 	@Override
@@ -151,13 +498,13 @@ public class GraphicsHook extends Graphics2D {
 
 	@Override
 	public void drawString(String str, int x, int y) {
-		p("drawString "+str,x,y);
+		pStr(1,"drawString",str,x,y);
+		addPiece(new TextPiece(x,y,str));
 	}
 
 	@Override
 	public void drawString(AttributedCharacterIterator iterator, int x, int y) {
 		p("drawString-iterator",x,y);
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -206,7 +553,7 @@ public class GraphicsHook extends Graphics2D {
 	@Override
 	public Color getColor() {
 		p("getColor");
-		return null;
+		return _color;
 	}
 
 	@Override
@@ -225,7 +572,7 @@ public class GraphicsHook extends Graphics2D {
 	@Override
 	public void setClip(Shape clip) {
 		_clip=clip;
-		p("seClip-"+clip.toString());
+		pShape("setClip", clip);
 	}
 
 	@Override
@@ -233,16 +580,23 @@ public class GraphicsHook extends Graphics2D {
 		p("setClip",x,y,width,height);
 	}
 
+	Color _color=null;
 	@Override
 	public void setColor(Color c) {
-		p("setColor",c.getRGB());
+		if(_color==null || _color!=c)
+			p("setColor",c.getRGB());
+		_color=c;
 	}
 
 	Font _font=null;
 	@Override
 	public void setFont(Font f) {
+		if(_font==null || 
+				!f.getName().equals(_font.getName()) || 
+				f.getSize()!=_font.getSize() ||
+				f.getStyle()!=_font.getStyle())
+			pf(f,1);
 		_font=f;
-		p("setFont-"+f.getFamily()+"-"+f.getFontName());
 	}
 
 	@Override
@@ -260,179 +614,269 @@ public class GraphicsHook extends Graphics2D {
 		p("translate",x,y);
 	}
 
-	public String toString(){
-		pw.close();
-		return new String(baos.toByteArray());
-	}
 	@Override
 	public void addRenderingHints(Map<?, ?> hints) {
-		// TODO Auto-generated method stub
-		
+		pw.println(" <addRenderingHints>");
+		Set<Object> keys=(Set<Object>)hints.keySet();
+		for(Object k : keys){
+			pKV("renderingHint",k.toString(),hints.get(k).toString(),2);
+		}
+		pw.println(" </addRenderingHints>");
 	}
 	@Override
 	public void clip(Shape s) {
-		// TODO Auto-generated method stub
-		
+		pShape("clipShape",s);
 	}
 	@Override
 	public void draw(Shape s) {
-		// TODO Auto-generated method stub
-		
+		pShape("draw",s);
 	}
 	@Override
 	public void drawGlyphVector(GlyphVector g, float x, float y) {
-		// TODO Auto-generated method stub
-		
+		q("drawGlypthVector",x,y);
 	}
 	@Override
 	public boolean drawImage(Image img, AffineTransform xform, ImageObserver obs) {
-		// TODO Auto-generated method stub
+		po("drawImage", 1);
+		pa(xform,2);
+		double x=xform.getTranslateX();
+		double y=xform.getTranslateY();
+		try {
+			pi(x,y,img,null,2);
+		}catch(IOException e){
+			p("Error");
+		}
+		pc("drawImage", 1);
 		return false;
 	}
 	@Override
 	public void drawImage(BufferedImage img, BufferedImageOp op, int x, int y) {
-		// TODO Auto-generated method stub
-		
+		Image img1=op.filter(img, null);
+		drawImage(img1,new AffineTransform(1f,0f,0f,1f,x,y),null);
 	}
 	@Override
 	public void drawRenderableImage(RenderableImage img, AffineTransform xform) {
-		// TODO Auto-generated method stub
-		
+		drawImage((Image)img, xform, null);
 	}
 	@Override
 	public void drawRenderedImage(RenderedImage img, AffineTransform xform) {
-		// TODO Auto-generated method stub
-		
+		drawImage((Image)img, xform, null);
 	}
 	@Override
 	public void drawString(String str, float x, float y) {
-		// TODO Auto-generated method stub
-		
+		if(str.trim().length()==0)
+			return;
+		pStr(1,"drawString",str,x,y);
+		addPiece(new TextPiece(x,y,str));
 	}
 	@Override
 	public void drawString(AttributedCharacterIterator iterator, float x,
 			float y) {
-		// TODO Auto-generated method stub
-		
+		q("drawString-attributed",x,y);
 	}
 	@Override
 	public void fill(Shape s) {
-		// TODO Auto-generated method stub
-		
+		pShape("fill",s);
 	}
 	@Override
 	public Color getBackground() {
-		// TODO Auto-generated method stub
-		return null;
+		q("getBackground");
+		return _background;
 	}
 	@Override
 	public Composite getComposite() {
-		// TODO Auto-generated method stub
+		p("getComposite");
 		return null;
 	}
 	@Override
 	public GraphicsConfiguration getDeviceConfiguration() {
-		// TODO Auto-generated method stub
+		p("getDeviceConfiguration");
 		return null;
 	}
+	FontRenderContext _frc=null;
 	@Override
 	public FontRenderContext getFontRenderContext() {
-		// TODO Auto-generated method stub
-		return null;
+		//p("getFontRendererContext");
+		if(_frc==null)
+			_frc=new FontRenderContext(null,true,true);
+		return _frc;
 	}
 	@Override
 	public Paint getPaint() {
-		// TODO Auto-generated method stub
-		return null;
+		p("getPaint");
+		return _paint;
 	}
 	@Override
 	public Object getRenderingHint(Key hintKey) {
-		// TODO Auto-generated method stub
+		p("GetRenderingHint-"+hintKey.toString());
 		return null;
 	}
 	@Override
 	public RenderingHints getRenderingHints() {
-		// TODO Auto-generated method stub
+		p("getRenderingHints");
 		return null;
 	}
 	@Override
 	public Stroke getStroke() {
-		// TODO Auto-generated method stub
+		p("getStroke");
 		return null;
 	}
 	@Override
 	public AffineTransform getTransform() {
-		// TODO Auto-generated method stub
-		return null;
+		p("getAffineTRansform");
+		return _affineTransform;
 	}
 	@Override
 	public boolean hit(Rectangle rect, Shape s, boolean onStroke) {
-		// TODO Auto-generated method stub
+		p("hit");
 		return false;
 	}
 	@Override
 	public void rotate(double theta) {
-		// TODO Auto-generated method stub
-		
+		q("rotate",theta);
 	}
 	@Override
 	public void rotate(double theta, double x, double y) {
-		// TODO Auto-generated method stub
-		
+		q("rotate",theta,x,y);
 	}
 	@Override
 	public void scale(double sx, double sy) {
-		// TODO Auto-generated method stub
-		
+		q("scale",sx,sy);
 	}
+	Color _background;
 	@Override
 	public void setBackground(Color color) {
-		// TODO Auto-generated method stub
-		
+		p("setBackground",color.getRGB());
+		_background=color;
 	}
+	Composite _composite=null;
 	@Override
 	public void setComposite(Composite comp) {
-		// TODO Auto-generated method stub
-		
+		p("setComposite");
+		_composite=comp;
 	}
+	Paint _paint;
 	@Override
 	public void setPaint(Paint paint) {
-		// TODO Auto-generated method stub
-		
+		p("setPaint");
+		_paint=paint;
 	}
+	
+	Hashtable<String, String> rhs=new Hashtable<String, String>();
 	@Override
 	public void setRenderingHint(Key hintKey, Object hintValue) {
-		// TODO Auto-generated method stub
-		
+		String currentHintValue=rhs.get(hintKey.toString());
+		if(currentHintValue==null || !currentHintValue.equals(hintValue.toString())){
+			pKV("setRenderingHint",hintKey.toString(),hintValue.toString(),1);
+			rhs.put(hintKey.toString(), hintValue.toString());
+		}
 	}
 	@Override
 	public void setRenderingHints(Map<?, ?> hints) {
-		// TODO Auto-generated method stub
-		
+		po("setRenderingHints-MAP",2);
+		Set<?> keys=hints.keySet();
+		for(Iterator<?> it=keys.iterator();it.hasNext();){
+			Object key=it.next();
+			pKV("setRenderingHint",key.toString(),hints.get(key).toString(),3);
+		}
+		po("setRenderingHints-MAP",2);
 	}
+	Stroke _stroke=null;
 	@Override
 	public void setStroke(Stroke s) {
-		// TODO Auto-generated method stub
-		
+		_stroke=s;
+		if(s instanceof BasicStroke){
+			BasicStroke bs=(BasicStroke)s;
+			po("setStroke",2);
+			qf("dashArray",3,bs.getDashArray());
+			qf2("dashPhase",3,bs.getDashPhase());
+			qf2("lineWidth",3,bs.getLineWidth());
+			qf2("miterLimit",3,bs.getMiterLimit());
+			switch(bs.getEndCap()){
+			case BasicStroke.CAP_BUTT: p(3,"capButt"); break;
+			case BasicStroke.CAP_ROUND: p(3,"capRound"); break;
+			case BasicStroke.CAP_SQUARE: p(3,"capSquare"); break;
+			}
+			switch(bs.getLineJoin()){
+			case BasicStroke.JOIN_BEVEL: p(3,"joinBevel"); break;
+			case BasicStroke.JOIN_MITER: p(3,"joinMiter"); break;
+			case BasicStroke.JOIN_ROUND: p(3,"joinRound"); break;
+			}
+			pc("setStroke",2);
+		}else{
+			pStr(1,"setStroke", s.toString());
+		}
 	}
+	AffineTransform _affineTransform=AffineTransform.getScaleInstance(1, 1);
 	@Override
 	public void setTransform(AffineTransform Tx) {
-		// TODO Auto-generated method stub
-		
+		_affineTransform=Tx;
 	}
 	@Override
 	public void shear(double shx, double shy) {
-		// TODO Auto-generated method stub
-		
+		q("shear",shx,shy);
 	}
 	@Override
 	public void transform(AffineTransform Tx) {
-		// TODO Auto-generated method stub
-		
+		po("transform-Tx",2);
+		pa(Tx, 3);
+		pc("transform-Tx",2);
 	}
 	@Override
 	public void translate(double tx, double ty) {
-		// TODO Auto-generated method stub
-		
+		q("translate",tx,ty);
 	}
+
+	/**
+	 * Converts the specified image to a <code>java.awt.image.BuffededImage</code>.  
+	 * If the image is already a buffered image, it is cast and returned.  
+	 * Otherwise, the image is drawn onto a new buffered image.  
+	 * 
+	 * @param  img  the image
+	 * @return  a buffered image
+	 */
+	public static BufferedImage imageToBufferedImage(Image img) {
+		// if it's already a buffered image, return it (assume it's fully loaded already)
+		if(img instanceof BufferedImage) {
+			return (BufferedImage)img;
+		}
+		// create a new buffered image and draw the specified image on it
+		BufferedImage bi = new BufferedImage(img.getWidth(null), img.getHeight(null), 
+			BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = bi.createGraphics();
+		g2d.drawImage(img, 0, 0, null);
+		g2d.dispose();
+		return bi;
+	}
+	/**
+	 * Converts the specified image to a byte array which is an image file 
+	 * of the specified format.  The formats that can be used are whatever 
+	 * formats are supported by the Java Image I/O package.  
+	 * 
+	 * @param  img     the image
+	 * @param  format  the image format (jpeg, png, etc)
+	 * @return  the bytes of the image file
+	 * @throws  IOException  on I/O errors
+	 */
+	public static byte[] toFormat(Image img, String format) throws IOException {
+		BufferedImage bi = imageToBufferedImage(img);
+		Iterator writers = ImageIO.getImageWritersByFormatName(format.toLowerCase());
+		if(writers == null || !writers.hasNext()) {
+			throw new IllegalArgumentException("Unsupported format (" + format + ")");
+		}
+		ImageWriter writer = (ImageWriter)writers.next();
+		IIOImage iioImg = new IIOImage(bi, null, null);
+		ImageWriteParam iwparam = writer.getDefaultWriteParam();
+		// if JPEG, set image quality parameters
+		if("jpeg".equalsIgnoreCase(format)) {
+			iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			iwparam.setCompressionQuality(1.0f);
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		writer.setOutput(ImageIO.createImageOutputStream(out));
+		writer.write(null, iioImg, iwparam);
+		return out.toByteArray();
+	}
+ 
+
 }
