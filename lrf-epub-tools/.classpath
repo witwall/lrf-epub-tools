@@ -22,11 +22,22 @@
 			<attribute name="javadoc_location" value="jar:file:/D:/eclipse/WS/LRFToolsV2/lib/forms-javadoc.zip!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/core-renderer.jar" sourcepath="/FlyingSaucer/src/java"/>
 	<classpathentry kind="lib" path="lib/serializer.jar"/>
 	<classpathentry kind="lib" path="lib/appFramework-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jnlp.jar"/>
-	<classpathentry kind="lib" path="lib/PDFBox-0.7.3.jar"/>
 	<classpathentry kind="lib" path="lib/FontBox-0.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/core-renderer.jar"/>
+	<classpathentry kind="lib" path="lib/batik-dom.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
+	<classpathentry kind="lib" path="lib/batik-ext.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
+	<classpathentry kind="lib" path="lib/batik-svggen.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
+	<classpathentry kind="lib" path="lib/batik-util.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
+	<classpathentry kind="lib" path="lib/batik-xml.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
+	<classpathentry kind="lib" path="lib/batik-awt-util.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
+	<classpathentry kind="lib" path="lib/batik-transcoder.jar"/>
+	<classpathentry kind="lib" path="lib/batik-bridge.jar"/>
+	<classpathentry kind="lib" path="lib/batik-css.jar"/>
+	<classpathentry kind="lib" path="lib/batik-gvt.jar"/>
+	<classpathentry kind="lib" path="lib/batik-svg-dom.jar"/>
+	<classpathentry kind="lib" path="lib/batik-codec.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
