@@ -6,6 +6,7 @@
               as the first entry and export the buildfile again. -->
 <project basedir="." default="build" name="LRFToolsV2">
     <property environment="env"/>
+    <property name="ECLIPSE_HOME" value="../../"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
@@ -16,15 +17,27 @@
         <pathelement location="lib/iText-2.1.3.jar"/>
         <pathelement location="lib/iText-rtf-2.1.3.jar"/>
         <pathelement location="lib/iText-rups-2.1.3.jar"/>
-        <pathelement location="lib/bcprov-jdk16-140.jar"/>
         <pathelement location="lib/Tidy.jar"/>
         <pathelement location="lib/nekohtml.jar"/>
         <pathelement location="lib/forms.jar"/>
-        <pathelement location="lib/browser.jar"/>
-        <pathelement location="lib/core-renderer.jar"/>
         <pathelement location="lib/serializer.jar"/>
         <pathelement location="lib/appFramework-1.0.jar"/>
         <pathelement location="lib/jnlp.jar"/>
+        <pathelement location="lib/FontBox-0.1.0.jar"/>
+        <pathelement location="lib/core-renderer.jar"/>
+        <pathelement location="lib/batik-dom.jar"/>
+        <pathelement location="lib/batik-ext.jar"/>
+        <pathelement location="lib/batik-svggen.jar"/>
+        <pathelement location="lib/batik-util.jar"/>
+        <pathelement location="lib/batik-xml.jar"/>
+        <pathelement location="lib/batik-awt-util.jar"/>
+        <pathelement location="lib/batik-transcoder.jar"/>
+        <pathelement location="lib/batik-bridge.jar"/>
+        <pathelement location="lib/batik-css.jar"/>
+        <pathelement location="lib/batik-gvt.jar"/>
+        <pathelement location="lib/batik-svg-dom.jar"/>
+        <pathelement location="lib/batik-codec.jar"/>
+        <pathelement location="lib/PDFBox-0.7.3.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -46,45 +59,27 @@
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target name="EPUBScrollToolbarPanel">
-        <java classname="lrf.gui.EPUBScrollToolbarPanel" failonerror="true" fork="yes">
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="PDFSerializer">
+        <java classname="lrf.pdf.PDFSerializer" failonerror="true" fork="yes">
             <classpath refid="LRFToolsV2.classpath"/>
         </java>
     </target>
-    <target name="EPUBViewer">
-        <java classname="lrf.gui.EPUBViewer" failonerror="true" fork="yes">
-            <classpath refid="LRFToolsV2.classpath"/>
-        </java>
-    </target>
-    <target name="HTML2EPUB">
-        <java classname="lrf.html.HTML2EPUB" failonerror="true" fork="yes">
-            <classpath refid="LRFToolsV2.classpath"/>
-        </java>
-    </target>
-    <target name="mergeEPUB">
+    <target name="RecurseDirs">
         <java classname="lrf.RecurseDirs" failonerror="true" fork="yes">
-            <jvmarg line="-Xms100M -Xmx400M"/>
-            <arg line="mergeEPUB &quot;d:\tmp\foreign&quot; -o d:\tmp\p.epub -a foreign -t foreign"/>
-            <classpath refid="LRFToolsV2.classpath"/>
-        </java>
-    </target>
-    <target name="rfcatpar">
-        <java classname="lrf.RecurseDirs" failonerror="true" fork="yes">
-            <jvmarg line="-Xss20M -Xms400M -Xmx500M"/>
-            <arg line="convert d:\_Eladio\_Libros\lrfBooks -d d:\_Eladio\_Libros\epubBooks\singles -epub -noe -noo -rf 20 -catpar &quot; &quot;"/>
-            <classpath refid="LRFToolsV2.classpath"/>
-        </java>
-    </target>
-    <target name="toHTML">
-        <java classname="lrf.RecurseDirs" failonerror="true" fork="yes">
-            <jvmarg line="-Xms100M -Xmx200M"/>
-            <arg line="convert d:\tmp -html -rf 40 -catpar &quot; &quot; -noe"/>
-            <classpath refid="LRFToolsV2.classpath"/>
-        </java>
-    </target>
-    <target name="Viewer">
-        <java classname="lrf.RecurseDirs" failonerror="true" fork="yes">
-            <arg line="view d:\tmp\alicia.epub"/>
+            <arg line="convertPDF D:\_Eladio\_Libros\booksPdf -d d:\tmp\pruebas"/>
             <classpath refid="LRFToolsV2.classpath"/>
         </java>
     </target>
