@@ -14,28 +14,22 @@ import java.util.Observer;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoundedRangeModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import lrf.Utils;
 import lrf.epub.EPUBDoc;
 
 import org.jdesktop.application.Application;
 import org.xhtmlrenderer.extend.TextRenderer;
-import org.xhtmlrenderer.layout.SharedContext;
-import org.xhtmlrenderer.render.RenderingContext;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 
 

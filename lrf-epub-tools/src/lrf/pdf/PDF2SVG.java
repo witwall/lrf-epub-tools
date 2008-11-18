@@ -43,6 +43,7 @@ public class PDF2SVG {
 	}
 	
 
+	@SuppressWarnings("unchecked")
 	public static void procPDF(File pdfFile){
 
         // Ask the test to render into the SVG Graphics2D implementation.
