@@ -270,7 +270,7 @@ public abstract class EPUBMetaData {
 		}
 	}
 
-	protected String createRandomIdentifier() {
+	public static String createRandomIdentifier() {
 		String ret = "";
 		Math.random();
 		ret += Integer

@@ -7,10 +7,18 @@ import java.util.Vector;
 
 import lrf.objects.tags.Tag;
 
+/**
+ * Maneja el tag 'style'
+ * @author elinares
+ *
+ */
 public class HtmlStyle {
 	
 	Hashtable<String,StyleItem> vitems=new Hashtable<String,StyleItem>();
-	
+	/**
+	 * Inicializa el contenido de style
+	 * @param vi
+	 */
 	private HtmlStyle(Hashtable<String, StyleItem> vi){
 		vitems=vi;
 	}
@@ -43,6 +51,10 @@ public class HtmlStyle {
 		StyleItem si=StyleItem.translate(t);
 		if(si!=null)
 			vitems.put(si.propName,si);
+	}
+	
+	public void add(StyleItem si){
+		vitems.put(si.propName, si);
 	}
 
 	public String toString(){

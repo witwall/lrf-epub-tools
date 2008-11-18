@@ -4,13 +4,20 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+
+import lrf.epub.EPUBMetaData;
+import lrf.html.HtmlDoc;
+import lrf.pdf.flow.Flower;
 
 import org.pdfbox.pdfviewer.PageDrawer;
 import org.pdfbox.pdmodel.PDDocument;
 import org.pdfbox.pdmodel.PDPage;
 import org.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
+
+import com.lowagie.text.pdf.PdfReader;
 
 public class PDFSerializer {
 
@@ -44,11 +51,19 @@ public class PDFSerializer {
 			x=pdfFile.getCanonicalPath();
 			y=x.substring(dirOrig.getCanonicalPath().length());
 			dest=new File(dirDest,y.substring(0,y.length()-4)+".xml");
+			//Creamos diectorios padre
 			dest.getParentFile().mkdirs();
 			PageDrawer pdr=new PageDrawer();
+			//Este graphicsHook lo usa pagedrawer
 			gh = new GraphicsHook(new FileOutputStream(dest));
+			//Titulo y autor
+			PdfReader pdfReader=new PdfReader(pdfFile.getCanonicalPath());
+			HashMap<String, String> info=pdfReader.getInfo();
+			String title=info.get("Title");
+			String author=info.get("Author");
+			pdfReader.close();
+			//Paginas del documento
 			PDDocument doc=PDDocument.load(pdfFile);
-			showMetaData(doc);
 			List<PDPage> pages=doc.getDocumentCatalog().getAllPages();
 			for(int i=0;i<pages.size();i++){
 				gh.newPage();
@@ -56,6 +71,18 @@ public class PDFSerializer {
 				pdr.drawPage(gh, pages.get(i), dim);
 			}
 			doc.close();
+			gh.close();
+			//Volcamos ahora a un EPUB
+			HtmlDoc htm=new HtmlDoc(
+					new File(dirDest,y.substring(0,y.length()-4)+".epub").getCanonicalPath(),
+					title,
+					author,
+					"LRFTools",
+					EPUBMetaData.createRandomIdentifier(),
+					new File(dirDest,y.substring(0,y.length()-4))
+					);
+			Flower flw=gh.getFlower();
+			
 			System.err.println("Processed "+pdfFile.getName());
 		} catch (Exception e) {
 			ok=false;

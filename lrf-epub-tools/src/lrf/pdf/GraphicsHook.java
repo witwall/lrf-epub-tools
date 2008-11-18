@@ -19,7 +19,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ImageObserver;
@@ -34,8 +33,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -44,184 +41,38 @@ import javax.imageio.ImageWriter;
 
 import lrf.Utils;
 import lrf.base64.Base64;
+import lrf.pdf.flow.Flower;
+import lrf.pdf.flow.ImagePiece;
+import lrf.pdf.flow.TextPiece;
 
 public class GraphicsHook extends Graphics2D {
 	private OutputStream os;
 	private PrintWriter pw;
+	private Flower flw;
 	
-	public GraphicsHook(){
-		os=new ByteArrayOutputStream();
-		pw=new PrintWriter(os);
-		init();
-	}
 	public GraphicsHook(OutputStream o){
 		os=o;
 		pw=new PrintWriter(os);
+		flw=new Flower();
 		init();
 	}
+	
+	public Flower getFlower(){
+		return flw;
+	}
+	
 	private void init(){
 		pw.println("<pdf>");
 	}
 	public void close(){
-		managePieces();
 		pw.print("</page>\n</pdf>\n");
+		flw.managePieces();
+		flw.dumpPieces(os);
 		pw.close();
 	}
 	public OutputStream getOS(){
 		return os;
 	}
-	
-	class Piece {
-		private float x,y;
-		Rectangle2D rect;
-		Piece next;
-		public Piece(float x, float y, Rectangle2D r){
-			this.x=x;
-			this.y=y;
-			this.rect=r;
-		}
-		public float getX(){
-			return (float)(x+rect.getX());
-		}
-		public float getY(){
-			return (float)(y+rect.getY());
-		}
-		public float getWidth(){
-			return (float)rect.getWidth();
-		}
-		public float getHeight(){
-			return (float)rect.getHeight();
-		}
-		public void append(Piece p){
-			Piece last=this;
-			while(last.next!=null){
-				last=last.next;
-			}
-			last.next=p;
-		}
-	}
-	
-	/**
-	 * Representa un texto en una posicion con una metrica determinada
-	 * Debe guardar informacion del estado de todos los estilos involucrados
-	 * Mantiene informacion de con qué otros textos está unido por los 
-	 * puntos cardinales.
-	 * En general se desecharan los textos que no vayan unidos al menos a otro
-	 * texto, para evitar mostrar headers y footers.
-	 * @author elinares
-	 *
-	 */
-	class TextPiece extends Piece {
-		String txt;
-		Font font;
-		Color color;
-		public TextPiece(float x, float y, String txt){
-			super(x,y,_font.getStringBounds(txt, getFontRenderContext()));
-			font=_font;
-			color=_color;
-			this.txt=txt;
-		}
-		public String getStyle(){
-			String ret="style=\"font-family:"+font.getFamily()+";";
-			ret+="font-size: "+font.getSize()+"em;";
-			if(font.isItalic())
-				ret+="font-style:italic;";
-			if(font.isBold())
-				ret+="font-weight:bold;";
-			ret+="color:{"+color.getRed()+","+color.getGreen()+","+color.getBlue()+"};";
-			ret+="\"";
-			return ret;
-		}
-		public String getText(){
-			String r=txt;
-			TextPiece c=(TextPiece)next;
-			while(c!=null){
-				r+=c.txt;
-				c=(TextPiece)c.next;
-			}
-			return r;
-		}
-	}
-	
-	class ImagePiece extends Piece {
-		public ImagePiece(float x, float y, Image img){
-			//TODO Hay que tener en cuenta affinetransform
-			super(0,0,new Rectangle2D.Float(x,y,img.getWidth(null),img.getHeight(null)));
-		}
-	}
-	Hashtable<Float, Hashtable<Float, Piece>> yOccurences=
-		new Hashtable<Float, Hashtable<Float,Piece>>();
-	
-	Hashtable<Float, Hashtable<Float, Piece>> xOccurences=
-		new Hashtable<Float, Hashtable<Float,Piece>>();
-
-	public void addPiece(Piece p){
-		Hashtable<Float, Piece> yxPos=yOccurences.get(p.getY());
-		if(yxPos==null){
-			yxPos=new Hashtable<Float, Piece>();
-			yOccurences.put(p.getY(), yxPos);
-		}
-		yxPos.put(p.getX(), p);
-		//Ahora con la X
-		Hashtable<Float, Piece> xyPos=xOccurences.get(p.getX());
-		if(xyPos==null){
-			xyPos=new Hashtable<Float, Piece>();
-			xOccurences.put(p.getX(), xyPos);
-		}
-		xyPos.put(p.getY(), p);
-	}
-	
-	private void managePieces(){
-		Hashtable<Float,Piece> renglones=new Hashtable<Float, Piece>();
-		//Ordenamos y unimos en 'y'
-		TreeSet<Float> ys=new TreeSet<Float>();
-		ys.addAll(yOccurences.keySet());
-		Vector<Float> minx=new Vector<Float>();
-		for(Iterator<Float> it=ys.iterator();it.hasNext();){
-			Float renglon=it.next();
-			TreeSet<Float> xs=new TreeSet<Float>();
-			Hashtable<Float, Piece> ytp=yOccurences.get(renglon);
-			xs.addAll(ytp.keySet());
-			boolean first=true;
-			for(Iterator<Float> i2=xs.iterator();i2.hasNext();){
-				float cx=i2.next();
-				if(first){
-					first=false;
-					minx.add(cx);
-				}
-				Piece p=ytp.get(cx);
-				Piece ap=renglones.get(renglon);
-				if(ap==null){
-					renglones.put(renglon, p);
-				}else if(p instanceof TextPiece){
-					if(p!=ap){
-						//TODO Comprobar que la distancia en X es correcta
-						ap.append(p);
-					}
-				}else if(p instanceof ImagePiece){
-					
-				}
-			}
-		}
-		TreeSet<Float> sortered=new TreeSet<Float>();
-		sortered.addAll(renglones.keySet());
-		po("items",1);
-		int px=0;
-		for(Iterator<Float> it=sortered.iterator();it.hasNext();){
-			float y=it.next();
-			Piece p=renglones.get(y);
-			if(p instanceof TextPiece){
-				TextPiece tp=(TextPiece)p;
-				pStr(2,"p",tp.getStyle(),tp.getText(),minx.elementAt(px++),y);
-			}else if(p instanceof ImagePiece){
-				pStr(2,"imag"," imagen "+p.getWidth()+" "+p.getHeight(),minx.elementAt(px++),y);
-			}
-		}
-		pc("items",1);
-		//Reset
-		yOccurences=new Hashtable<Float, Hashtable<Float,Piece>>();
-	}
-	
 	
 	public void error(String s){
 		pw.println(" <error txt=\""+s+"\"/>");
@@ -229,7 +80,6 @@ public class GraphicsHook extends Graphics2D {
 
 	int pageNumber=1;
 	public void newPage(){
-		managePieces();
 		if(pageNumber==1){
 			pw.println("</page>");
 			pw.println("<page number=\""+pageNumber+++"\">");
@@ -371,7 +221,8 @@ public class GraphicsHook extends Graphics2D {
 		pw.println("</"+s+">");
 	}
 	
-	public void pi(double x, double y, Image img, Integer bgColor, int lev) throws IOException {
+	public void pi(double x, double y, Image img, Integer bgColor, int lev, AffineTransform xt) 
+	throws IOException {
 		pl(lev);
 		int h=img.getHeight(null);
 		int w=img.getWidth(null);
@@ -383,7 +234,7 @@ public class GraphicsHook extends Graphics2D {
 		byte bs[]=toFormat(img, "png");
 		pw.println(Base64.encodeBytes(bs));
 		pc("Image",2);
-		addPiece(new ImagePiece((float)x,(float)y,img));
+		flw.addPiece(new ImagePiece(pageNumber,(float)x,(float)y,img,xt));
 	}
 	
 	@Override
@@ -404,7 +255,7 @@ public class GraphicsHook extends Graphics2D {
 	@Override
 	public Graphics create() {
 		p("create");
-		return new GraphicsHook();
+		return this;
 	}
 
 	@Override
@@ -429,7 +280,7 @@ public class GraphicsHook extends Graphics2D {
 		po("drawImage", 1);
 		pa(new AffineTransform(1f,0f,0f,1f,x,y),2);
 		try {
-			pi(x,y,img,bgcolor.getRGB(),2);
+			pi(x,y,img,bgcolor.getRGB(),2,null);
 		}catch(IOException e){
 			p("Error");
 		}
@@ -499,7 +350,7 @@ public class GraphicsHook extends Graphics2D {
 	@Override
 	public void drawString(String str, int x, int y) {
 		pStr(1,"drawString",str,x,y);
-		addPiece(new TextPiece(x,y,str));
+		flw.addPiece(new TextPiece(pageNumber,x,y,str,_font,_color,getFontRenderContext()));
 	}
 
 	@Override
@@ -642,7 +493,7 @@ public class GraphicsHook extends Graphics2D {
 		double x=xform.getTranslateX();
 		double y=xform.getTranslateY();
 		try {
-			pi(x,y,img,null,2);
+			pi(x,y,img,null,2,xform);
 		}catch(IOException e){
 			p("Error");
 		}
@@ -667,7 +518,7 @@ public class GraphicsHook extends Graphics2D {
 		if(str.trim().length()==0)
 			return;
 		pStr(1,"drawString",str,x,y);
-		addPiece(new TextPiece(x,y,str));
+		flw.addPiece(new TextPiece(pageNumber,x,y,str,_font,_color,getFontRenderContext()));
 	}
 	@Override
 	public void drawString(AttributedCharacterIterator iterator, float x,
