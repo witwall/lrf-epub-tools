@@ -161,7 +161,7 @@ public class Book extends EPUBMetaData implements Serializable {
 			list[i].delete();
 		tmpfDir.delete();
 		//Comprobamos si tiene TOC
-		if(toc!=null){
+		if(toc!=null && toc.ent!=null){
 			for(int i=0;i<toc.ent.size();i++){
 				TOC.Entry t=toc.ent.elementAt(i);
 				createNavPoint(Utils.toTOCText(t.lab), opt.getRealDest("P"+t.pag), getNavMap());

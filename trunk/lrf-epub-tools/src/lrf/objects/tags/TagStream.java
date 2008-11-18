@@ -58,7 +58,11 @@ public class TagStream extends Tag {
 				try {
 					t = loadTag(padre, reader, xk);
 				} catch (Exception e) {
-					t = new UnknowContent(0x100, padre, reader.getShort(true));
+					if(!reader.canGet(1)){
+						t = new UnknowContent(0x100, padre, reader.getByte(true));
+					}else{
+						t = new UnknowContent(0x100, padre, reader.getShort(true));
+					}
 				}
 				if (t != null)
 					tags.add(t);

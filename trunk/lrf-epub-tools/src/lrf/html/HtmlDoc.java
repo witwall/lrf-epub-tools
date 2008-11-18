@@ -17,7 +17,6 @@ import lrf.epub.EPUBMetaData;
 import lrf.objects.tags.Tag;
 
 import com.lowagie.text.Image;
-import com.sun.jmx.snmp.Enumerated;
 
 public class HtmlDoc implements EPUBEntity{
 	public String title,fNam,auth,id,producer;

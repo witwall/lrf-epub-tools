@@ -86,6 +86,18 @@ public class ByteReader implements Reader {
         return getShort(0);
     }
 
+	@Override
+	public int getByte(boolean advance) {
+        if(advance)
+        {
+            ndx += 1;
+            return getByte(-1);
+        } else
+        {
+            return getByte(0);
+        }
+	}
+
     /* (non-Javadoc)
 	 * @see lrf.buffer.Reader#getShort(boolean)
 	 */
@@ -106,7 +118,14 @@ public class ByteReader implements Reader {
 	 */
     public int getShort(int offset)
     {
-        return (buffer[ndx + offset] & 0xff) + ((buffer[ndx + offset + 1] & 0xff) << 8);
+    	try {
+        return (buffer[ndx + offset] & 0xff) + 
+          ((buffer[ndx + offset + 1] & 0xff) << 8);
+    	}catch(Exception e ){
+    		e.printStackTrace();
+    		System.exit(-1);
+    	}
+    	return 0;
     }
 
     /* (non-Javadoc)

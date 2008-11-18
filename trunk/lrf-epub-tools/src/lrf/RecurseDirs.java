@@ -26,7 +26,7 @@ import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.xml.xmp.XmpWriter;
 
 public class RecurseDirs {
-	public static boolean xml, pdf, rtf, html, rdi, epub, noo,nopb;
+	public static boolean xml, pdf, rtf, html, rdi, epub, noo,nopb, assvg;
 	public static String catpar=null;
 	public static ZipOutputStream zout = null;
 	public static String mergedFile=null;
@@ -96,7 +96,7 @@ public class RecurseDirs {
 				done = mergeEPUBActionParams(args);
 			}
 		} catch (Exception e) {
-			UsageAndExit();
+			e.printStackTrace();
 		}
 		if(!done)
 			UsageAndExit();
@@ -212,11 +212,15 @@ public class RecurseDirs {
 			}
 			if (args[i].equalsIgnoreCase("-noo"))
 				noo = true;
+			if (args[i].equalsIgnoreCase("-svg"))
+				assvg = true;
 		}
-		PDF2SVG.dirDest=dirOut;
-		PDF2SVG.dirOrig=root;
-		PDF2SVG.noo=noo;
-		PDF2SVG.recurse(root);
+		if(assvg){
+			PDF2SVG.dirDest=dirOut;
+			PDF2SVG.dirOrig=root;
+			PDF2SVG.noo=noo;
+			PDF2SVG.recurse(root);
+		}
 		return true;
 	}
 	

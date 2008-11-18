@@ -3,25 +3,47 @@ package lrf.html;
 import lrf.epub.EPUBMetaData;
 import lrf.objects.tags.Tag;
 
+/**
+ * Helper para ayudar en el manejo de Style
+ * @author elinares
+ *
+ */
 public class StyleItem implements Comparable<StyleItem>{
+	public static final String wspac="word-spacing";
+	public static final String lheig="line-height";
+	public static final String fsize="font-size";
+	public static final String tinde="text-indent";
+	public static final String talig="text-align";
+	public static final String mleft="margin-left";
+	public static final String mrigh="margin-right";
+	public static final String mtop ="margin-top";
+	public static final String fstyl="font-style";
+	public static final String fweig="font-weight";
+	public static final String color="color";
+	public static final String pbbef="page-break-before";
+	public static final String bbutt="BeginButton";
+	public static final String ebutt="EndButton";
 	//PropName,isRelative,level,coeficiente
+	/**
+	 * Contiene los style-items que maneja el aplicativo
+	 */
 	private static final String props[][]={
-		{"word-spacing","1","span","10"},
-		{"line-height" ,"1","span","140"},
-		{"font-size"   ,"1","span","12"},
-		{"text-indent" ,"1","div" ,"14"},
-		{"text-align"  ,"0","div" ,"1"},
-		{"margin-left" ,"1","body","10"},
-		{"margin-right","1","body","10"},
-		{"margin-top"  ,"1","body","10"},
+		{wspac,"1","span","10"},
+		{lheig,"1","span","140"},
+		{fsize,"1","span","12"},
+		{tinde,"1","div" ,"14"},
+		{talig,"0","div" ,"1"},
+		{mleft,"1","body","10"},
+		{mrigh,"1","body","10"},
+		{mtop ,"1","body","10"},
 		//{"max-height"  ,"0","body",""},
 		//{"max-width"   ,"0","body",""},
-		{"font-style"  ,"0","span","1"},
-		{"font-weight" ,"0","span","1"},
-		{"color"       ,"0","span","1"},
-		{"page-break-before", "0","div","1"},
-		{"BeginButton"   ,"0","proc","1"},
-		{"EndButton"   ,"0","proc","1"}
+		{fstyl ,"0","span","1"},
+		{fweig ,"0","span","1"},
+		{color ,"0","span","1"},
+		{pbbef ,"0","div","1"},
+		{bbutt ,"0","proc","1"},
+		{ebutt ,"0","proc","1"}
 	};
 
 	public static final int st_body=1;

@@ -142,4 +142,12 @@ public class MappedReader implements Reader {
 		ndx+=skippedBytes;
 	}
 
+	@Override
+	public int getByte(boolean advance) {
+		int ret=getByte();
+		if(advance)
+			skip(1);
+		return ret;
+	}
+
 }

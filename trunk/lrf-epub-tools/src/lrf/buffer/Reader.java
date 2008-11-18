@@ -12,6 +12,8 @@ public interface Reader {
 
 	public int getByte(int offset);
 
+	public int getByte(boolean advance);
+
 	public int getInt();
 
 	public int getInt(boolean advance);
