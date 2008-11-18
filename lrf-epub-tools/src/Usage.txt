@@ -25,7 +25,7 @@ Actions:
  
  You cannot output HTML files to a zipfile right now.
 
- 2) convertPDF dir [-d dirOut] [-SVG] [-noo]
+ 2) convertPDF dir [-d dirOut] -SVG [-noo]
  
   Converts every PDF in 'dir' (with recursion) to EPUB format. Right now
   the conversion is performed creating a SVG (Scalable Vector Graphics) for
