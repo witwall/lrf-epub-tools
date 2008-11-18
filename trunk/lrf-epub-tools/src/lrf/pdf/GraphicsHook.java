@@ -709,6 +709,7 @@ public class GraphicsHook extends Graphics2D {
 	 * @return  the bytes of the image file
 	 * @throws  IOException  on I/O errors
 	 */
+	@SuppressWarnings("unchecked")
 	public static byte[] toFormat(Image img, String format) throws IOException {
 		BufferedImage bi = imageToBufferedImage(img);
 		Iterator writers = ImageIO.getImageWritersByFormatName(format.toLowerCase());

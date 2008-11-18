@@ -82,30 +82,6 @@ public class FileTreeListener extends MouseAdapter {
      */
     private FileTree fileTree;
     
-    /**
-     * feature not implemented
-     */
-    private class RenameAction extends AbstractAction {
-
-        public RenameAction(TreePath treePath) {
-            this.treePath = treePath;
-            
-            putValue(Action.NAME, "Rename");
-            
-            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)treePath.getLastPathComponent();
-            fileTreeNode = (FileTreeNode)treeNode.getUserObject();
-            if (!fileTreeNode.file.canWrite())
-                setEnabled(false);
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            fileTree.startEditingAtPath(treePath);
-        }
-        
-        private TreePath treePath;
-        private FileTreeNode fileTreeNode;
-    }
-    
     private class DeleteFileAction extends AbstractAction {
         /**
          * constructor for the action to delete a file or directory

@@ -25,7 +25,6 @@
 	<classpathentry kind="lib" path="lib/serializer.jar"/>
 	<classpathentry kind="lib" path="lib/appFramework-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jnlp.jar"/>
-	<classpathentry kind="lib" path="lib/FontBox-0.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core-renderer.jar"/>
 	<classpathentry kind="lib" path="lib/batik-dom.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
 	<classpathentry kind="lib" path="lib/batik-ext.jar" sourcepath="D:/eclipse/WS/batik-1.7/sources"/>
