@@ -11,12 +11,12 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import lrf.Utils;
 import lrf.conv.BaseRenderer;
 import lrf.epub.EPUBEntity;
 import lrf.epub.EPUBMetaData;
 import lrf.objects.tags.Tag;
 
-import com.lowagie.text.Image;
 
 public class HtmlDoc implements EPUBEntity{
 	public String title,fNam,auth,id,producer;
@@ -90,7 +90,9 @@ public class HtmlDoc implements EPUBEntity{
 				anchorDespues=Emitter.anchorOrig(null,false);
 			}
 		}else{
-			changeStyle(new HtmlStyle(si));
+			StyleItem actual=currentStyle.getStyle(si.propName);
+			if(actual==null || !actual.equals(si))
+				changeStyle(new HtmlStyle(si));
 		}
 	}
 	
@@ -147,12 +149,12 @@ public class HtmlDoc implements EPUBEntity{
 		emits.add(Emitter.head(auth, id, title, fNam+".css")+"\n");
 	}
 
-	public void addImage(int id, Image im, String ext, byte[] b)
+	public void addImage(int id, int w, int h, String ext, byte[] b)
 			throws Exception {
 		String imgfn=imagenes.get(id);
 		if(imgfn==null){
 			numIm++;
-			imgfn=fNam+numIm+ext;
+			imgfn=Utils.toUnhandText(fNam+numIm+ext);
 			FileOutputStream fosi=new FileOutputStream(new File(tmp,""+numIm));
 			fosi.write(b);
 			fosi.close();
@@ -163,7 +165,7 @@ public class HtmlDoc implements EPUBEntity{
 				Emitter.img(
 						imgfn,
 						imgfn.substring(0,imgfn.length()-ext.length()),
-						""+im.getWidth(),""+im.getHeight())+"\n");
+						""+w,""+h)+"\n");
 	}
 	
 	public Vector<String> getImagenes(){
@@ -227,9 +229,9 @@ public class HtmlDoc implements EPUBEntity{
 			int i=0;
 			for(Enumeration<String> enu=imagenes.elements();enu.hasMoreElements();){
 				String imgfn=enu.nextElement();
-				e.processFile(
-						new FileInputStream(new File(tmp,""+(++i))), 
-						"images/"+imgfn);
+				FileInputStream fis=new FileInputStream(new File(tmp,""+(++i)));
+				e.processFile(fis,"images/"+imgfn);
+				fis.close();
 			}
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();

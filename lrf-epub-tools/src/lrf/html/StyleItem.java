@@ -156,7 +156,7 @@ public class StyleItem implements Comparable<StyleItem>{
 	public StyleItem(String n, int v){
 		propName=n;
 		numeric=true;
-		unit="pt";
+		unit="";
 		number=((float)v);
 	}
 	
@@ -168,7 +168,7 @@ public class StyleItem implements Comparable<StyleItem>{
 			while(!Character.isDigit(v.charAt(pos)))
 				pos--;
 			try {
-				number=Float.valueOf(v.substring(0,pos));
+				number=Float.valueOf(v.substring(0,pos+1));
 				unit=v.substring(pos+1).trim();
 				numeric=true;
 			} catch (NumberFormatException e) {
@@ -178,6 +178,11 @@ public class StyleItem implements Comparable<StyleItem>{
 				unit="";
 			}
 		}
+	}
+	private boolean fLRF=true;
+	public StyleItem(String n, String v, boolean fromLRF){
+		this(n,v);
+		fLRF=fromLRF;
 	}
 
 	@Override
@@ -192,7 +197,7 @@ public class StyleItem implements Comparable<StyleItem>{
 	@Override
 	public boolean equals(Object arg0) {
 		StyleItem other=(StyleItem)arg0;
-		return propName.equals(other.propName);
+		return getExpression().equals(other.getExpression());
 	}
 	
 	private String formatValue(String v){
@@ -202,6 +207,9 @@ public class StyleItem implements Comparable<StyleItem>{
 	}
 
 	public String getExpression(){
+		if(!fLRF){
+			return propName+":"+formatValue(value);
+		}
 		if(!numeric){
 			if(propName.equals("font-family")){
 				return propName+":"+formatValue(EPUBMetaData.ffam) ;

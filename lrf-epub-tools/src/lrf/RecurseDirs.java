@@ -19,6 +19,7 @@ import lrf.merge.MergePDFAndTOC;
 import lrf.objects.Book;
 import lrf.objects.tags.Tag;
 import lrf.pdf.PDF2SVG;
+import lrf.pdf.PDFSerializer;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
@@ -220,6 +221,10 @@ public class RecurseDirs {
 			PDF2SVG.dirOrig=root;
 			PDF2SVG.noo=noo;
 			PDF2SVG.recurse(root);
+		}else{
+			PDFSerializer.dirDest=dirOut;
+			PDFSerializer.dirOrig=root;
+			PDFSerializer.recurse(root);
 		}
 		return true;
 	}

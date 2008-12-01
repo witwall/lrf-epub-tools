@@ -70,7 +70,7 @@ public class PDF2SVG {
 			if(author==null)
 				author="Unknown Author";
 			pdfReader.close();
-			PDF2EPUB epub=new PDF2EPUB(title,author);
+			PDF2EPUB_SVG epub=new PDF2EPUB_SVG(title,author);
 			epub.init(dest.getCanonicalPath());
 			System.out.print("Processing "+pdfFile.getName());
 			for(int i=0;i<pages.size();i++){

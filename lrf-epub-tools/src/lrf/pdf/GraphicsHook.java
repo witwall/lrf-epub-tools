@@ -27,7 +27,6 @@ import java.awt.image.renderable.RenderableImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.text.AttributedCharacterIterator;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -47,12 +46,13 @@ import lrf.pdf.flow.TextPiece;
 
 public class GraphicsHook extends Graphics2D {
 	private OutputStream os;
-	private PrintWriter pw;
+	private NullablePrintWriter pw;
 	private Flower flw;
+	private int height,width;
 	
 	public GraphicsHook(OutputStream o){
 		os=o;
-		pw=new PrintWriter(os);
+		pw=new NullablePrintWriter(os);
 		flw=new Flower();
 		init();
 	}
@@ -66,8 +66,6 @@ public class GraphicsHook extends Graphics2D {
 	}
 	public void close(){
 		pw.print("</page>\n</pdf>\n");
-		flw.managePieces();
-		flw.dumpPieces(os);
 		pw.close();
 	}
 	public OutputStream getOS(){
@@ -79,7 +77,10 @@ public class GraphicsHook extends Graphics2D {
 	}
 
 	int pageNumber=1;
-	public void newPage(){
+	public void newPage(int w, int h){
+		height=h;
+		width=w;
+		flw.setPageDim(w, h);
 		if(pageNumber==1){
 			pw.println("</page>");
 			pw.println("<page number=\""+pageNumber+++"\">");
@@ -224,8 +225,8 @@ public class GraphicsHook extends Graphics2D {
 	public void pi(double x, double y, Image img, Integer bgColor, int lev, AffineTransform xt) 
 	throws IOException {
 		pl(lev);
-		int h=img.getHeight(null);
-		int w=img.getWidth(null);
+		int h=img.getHeight(null)*800/height;
+		int w=img.getWidth(null)*600/width;
 		String s="Image type=\"png\" x=\""+x+"\" y=\""+y+"\" h=\""+h+"\" w=\""+w+"\"";
 		if(bgColor!=null)
 			po(s+" bgColor=\""+bgColor.intValue()+"\"",1);
@@ -443,10 +444,12 @@ public class GraphicsHook extends Graphics2D {
 	@Override
 	public void setFont(Font f) {
 		if(_font==null || 
-				!f.getName().equals(_font.getName()) || 
-				f.getSize()!=_font.getSize() ||
-				f.getStyle()!=_font.getStyle())
+			!f.getName().equals(_font.getName()) || 
+			f.getSize()!=_font.getSize() ||
+			f.getStyle()!=_font.getStyle()){
+			
 			pf(f,1);
+		}
 		_font=f;
 	}
 

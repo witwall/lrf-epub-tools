@@ -1,9 +1,9 @@
 package lrf.pdf.flow;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Vector;
+
+import lrf.html.HtmlDoc;
 
 
 
@@ -18,26 +18,54 @@ public class Flower {
 	double rBorder=initRBorder;
 	double lBorder=initLBorder;
 	
+	int currentPageHeight, currentPageWidth;
+	
 	Vector<Piece> pieces=new Vector<Piece>();
+	Piece lastAdded=null;
+	
+	public void setPageDim(int width, int height){
+		currentPageHeight=height;
+		currentPageWidth=width;
+	}
 	
 	public void addPiece(Piece p){
+		if(lastAdded!=null && lastAdded instanceof TextPiece && p instanceof TextPiece){
+			TextPiece la=(TextPiece)lastAdded;
+			TextPiece pp=(TextPiece)p;
+			if( 	la.getY()==pp.getY() && 
+					la.getX()< pp.getX() &&
+					la.getX()+la.getWidth()-pp.getX()<10 &&
+					la.isSameStyle(pp)){
+					
+				la.txt+=pp.txt;
+				la.rect.setRect(
+						la.getX(), 
+						la.getY(), 
+						la.getWidth()+pp.getWidth(), 
+						la.getHeight());
+				return;
+			}
+		}
+		lastAdded=p;
 		pieces.add(p);
 	}
 	
-	public void managePieces(){
+	public void managePieces(HtmlDoc doc){
+		rBorder=initRBorder;
+		lBorder=initLBorder;
 		//Ordenamos las piezas empezando por la primera pagina,
 		//dentro de cada pagina por altura (y) y luego por
 		//posicion x.
 		Collections.sort(pieces);
 		//Inicializamos algunas variables
 		TextPiece last=null;
+		TextPiece lastSOP=null;
 		//Ahora nos dedicamos a detectar los paragraphs.
 		double resetBorderAtY=900;
 		double lengthOfText=0;
 		for(Piece p:pieces){
 			if(last!=null){
-				if(last.numPage!=p.numPage ||
-				   p.getY()>=resetBorderAtY){
+				if(last.numPage!=p.numPage || p.getY()>=resetBorderAtY){
 					resetBorderAtY=900;
 					lBorder=initLBorder;
 					rBorder=initRBorder;
@@ -58,6 +86,7 @@ public class Flower {
 					current.isStartOfParagraph=true;
 					current.isEndOfParagraph=true;
 					lengthOfText=current.getWidth();
+					lastSOP=current;
 				}else{
 					if( last.isHorizAdjacent(current) ||
 						(last.isOnRightBorder(rBorder) && current.isOnLeftBorder(lBorder)))
@@ -70,38 +99,39 @@ public class Flower {
 						//Fin de paragraph. Hay que comprobar si son head o foot
 						last.isEndOfParagraph=true;
 						if(lengthOfText<500){
-							last.hPos(lBorder, rBorder);
-							last.vPos(yHead, yFoot);
+							lastSOP.hPos(lBorder, rBorder);
+							lastSOP.vPos(yHead, yFoot);
 						}else{
-							last.position=3; //justify
+							lastSOP.position=3; //justify
 						}
 						current.isStartOfParagraph=true;
 						current.isEndOfParagraph=true;
 						lengthOfText=current.getWidth();
+						lastSOP=current;
+						//Emitimos
+						
 					}
-					
 				}
 				last=current;
 			}
 		}
+		dumpPieces(pieces,lastSOP,doc);
+		Vector<Piece> preserve=new Vector<Piece>();
+		for(int pos=pieces.indexOf(lastSOP);pos<pieces.size();pos++){
+			preserve.add( pieces.get(pos) );
+		}
+		pieces=preserve;
 	}
 	
-	public void dumpPieces(OutputStream os){
-		PrintWriter pw=new PrintWriter(os);
-		for(Piece p:pieces){
-			if(p.isStartOfParagraph)
-				pw.print("\nSP ");
-			if(p.isHead)
-				pw.print("H ");
-			if(p.isFoot)
-				pw.print("F ");
-			if(p instanceof TextPiece){
-				pw.print(((TextPiece) p).txt);
-			}else{
-				pw.print("[[IMAGE]]");
-			}
-			if(p.isEndOfParagraph)
-				pw.print("<"+p.position+","+p.horizAdj+">");
+	public void dumpPieces(Vector<Piece> vpi, TextPiece until, HtmlDoc doc){
+		for(Piece p:vpi){
+			if(p.equals(until))
+				break;
+			p.emitHTML(doc);
 		}
+	}
+	
+	public void dumpPieces(HtmlDoc doc){
+		dumpPieces(pieces,null,doc);
 	}
 }
