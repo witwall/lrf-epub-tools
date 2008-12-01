@@ -2,13 +2,14 @@ package lrf.pdf.flow;
 
 import java.awt.geom.Rectangle2D;
 
+import lrf.html.HtmlDoc;
 
-public class Piece implements Comparable<Piece>{
+
+public abstract class Piece implements Comparable<Piece>{
 	static final double htol=100;
 	static final double vtol=10;
 	Rectangle2D rect;
 	int numPage;
-	Piece next;
 	
 	boolean isHead=false;
 	boolean isFoot=false;
@@ -22,7 +23,7 @@ public class Piece implements Comparable<Piece>{
 	 */
 	int position=1;
 
-	public Piece(int np, float x, float y, Rectangle2D r){
+	public void init(int np, float x, float y, Rectangle2D r) {
 		this.rect=r;
 		rect.setRect(x+rect.getX(), y+rect.getY(), rect.getWidth(), rect.getHeight());
 		numPage=np;
@@ -38,13 +39,6 @@ public class Piece implements Comparable<Piece>{
 	}
 	public float getHeight(){
 		return (float)rect.getHeight();
-	}
-	public void append(Piece p){
-		Piece last=this;
-		while(last.next!=null){
-			last=last.next;
-		}
-		last.next=p;
 	}
 	@Override
 	public int compareTo(Piece o) {
@@ -131,5 +125,7 @@ public class Piece implements Comparable<Piece>{
 		if(isFooter(yFoot))
 			isFoot=true;
 	}
+	
+	public abstract void emitHTML(HtmlDoc doc);
 }
 

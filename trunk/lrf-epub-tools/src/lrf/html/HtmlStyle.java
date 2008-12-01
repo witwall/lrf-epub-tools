@@ -40,6 +40,10 @@ public class HtmlStyle {
 		vitems.put(si.propName,si);
 	}
 	
+	public StyleItem getStyle(String name){
+		return vitems.get(name);
+	}
+	
 	private void addTags(Vector<Tag> tgs) {
 		for(int i=0;i<tgs.size();i++){
 			Tag t=tgs.elementAt(i);

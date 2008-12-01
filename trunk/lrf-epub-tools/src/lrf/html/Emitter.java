@@ -1,5 +1,7 @@
 package lrf.html;
 
+import lrf.Utils;
+
 
 
 public class Emitter {
@@ -21,6 +23,7 @@ public class Emitter {
 	}
 
 	public static String head(String auth, String id, String title,String cssFileName){
+		cssFileName=Utils.toUnhandText(cssFileName);
 		return
 		"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"+
 		"<head>\n" +

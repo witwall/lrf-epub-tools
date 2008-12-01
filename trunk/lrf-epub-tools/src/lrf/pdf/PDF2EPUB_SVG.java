@@ -7,10 +7,10 @@ import java.util.Vector;
 
 import lrf.epub.EPUBMetaData;
 
-public class PDF2EPUB extends EPUBMetaData {
+public class PDF2EPUB_SVG extends EPUBMetaData {
 	String title,author,id;
 	
-	public PDF2EPUB(String tit, String aut){
+	public PDF2EPUB_SVG(String tit, String aut){
 		title=tit;
 		author=aut;
 		id=createRandomIdentifier();
