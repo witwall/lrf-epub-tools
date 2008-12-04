@@ -1,9 +1,9 @@
 package lrf.pdf.flow;
 
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 
@@ -15,6 +15,8 @@ public class ImagePiece extends Piece {
 
 	BufferedImage im;
 	static int imNum=1;
+	
+	
 	public ImagePiece(int np,float x, float y, Image img, AffineTransform at){
 		init(
 			np,
@@ -28,17 +30,26 @@ public class ImagePiece extends Piece {
 			)
 		);
 		BufferedImage bim=(BufferedImage)img;
-		int w=(int)(bim.getWidth()*at.getScaleX());
-		int h=(int)(bim.getHeight()*at.getScaleY());
-		Image scaledImage=bim.getScaledInstance(
-				w,
-				h,
-				Image.SCALE_SMOOTH
-				);
-		 im=new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);
-		 Graphics2D g2d=im.createGraphics();
-		 g2d.drawImage(scaledImage, null, null);
-		 g2d.dispose();
+		AffineTransformOp atop=new AffineTransformOp(
+				at
+				,null);
+		im=atop.filter(bim, null);
+		double xx=at.getTranslateX();
+		double yy=at.getTranslateY();
+		int w=(int)(bim.getWidth()*Math.abs(at.getScaleX()));
+		int h=(int)(bim.getHeight()*Math.abs(at.getScaleY()));
+		if(xx+w>im.getWidth())
+			xx-=w;
+		if(yy+h>im.getHeight())
+			yy-=h;
+		im=im.getSubimage((int)xx, (int)yy, w, h);
+		/*
+		Image scaledImage=aux.getScaledInstance(w,h,Image.SCALE_SMOOTH);
+		im=new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d=im.createGraphics();
+		g2d.drawImage(scaledImage, null, null);
+		g2d.dispose();
+		*/
 	}
 
 	@Override

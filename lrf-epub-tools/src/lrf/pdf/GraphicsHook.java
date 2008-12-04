@@ -26,7 +26,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.renderable.RenderableImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.text.AttributedCharacterIterator;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -45,14 +45,12 @@ import lrf.pdf.flow.ImagePiece;
 import lrf.pdf.flow.TextPiece;
 
 public class GraphicsHook extends Graphics2D {
-	private OutputStream os;
-	private NullablePrintWriter pw;
+	private PrintWriter pw;
 	private Flower flw;
 	private int height,width;
 	
-	public GraphicsHook(OutputStream o){
-		os=o;
-		pw=new NullablePrintWriter(os);
+	public GraphicsHook(){
+		pw=null;
 		flw=new Flower();
 		init();
 	}
@@ -62,42 +60,39 @@ public class GraphicsHook extends Graphics2D {
 	}
 	
 	private void init(){
-		pw.println("<pdf>");
+		if(pw!=null) pw.println("<pdf>");
 	}
 	public void close(){
-		pw.print("</page>\n</pdf>\n");
-		pw.close();
+		if(pw!=null) pw.print("</page>\n</pdf>\n");
+		if(pw!=null) pw.close();
 	}
-	public OutputStream getOS(){
-		return os;
-	}
-	
 	public void error(String s){
-		pw.println(" <error txt=\""+s+"\"/>");
+		if(pw!=null) pw.println(" <error txt=\""+s+"\"/>");
 	}
 
-	int pageNumber=1;
+	int pageNumber=0;
 	public void newPage(int w, int h){
 		height=h;
 		width=w;
-		flw.setPageDim(w, h);
-		if(pageNumber==1){
-			pw.println("</page>");
-			pw.println("<page number=\""+pageNumber+++"\">");
+		pageNumber++;
+		flw.newPage(pageNumber, w, h);
+		if(pageNumber>1){
+			if(pw!=null) pw.println("</page>");
+			if(pw!=null) pw.println("<page number=\""+(pageNumber)+"\">");
 		}else{
-			pw.println("<page number=\""+pageNumber+++"\">");
+			if(pw!=null) pw.println("<page number=\""+(pageNumber)+"\">");
 		}
 	}
 	
 	public void pf(Font f,int lev){
 		pl(lev);
-		pw.print("<font name=\""+f.getFontName()+"\"");
-		pw.print(" size=\""+f.getSize()+"\"");
+		if(pw!=null) pw.print("<font name=\""+f.getFontName()+"\"");
+		if(pw!=null) pw.print(" size=\""+f.getSize()+"\"");
 		if(f.isBold())
-			pw.print(" bold=\"true\"");
+			if(pw!=null) pw.print(" bold=\"true\"");
 		if(f.isItalic())
-			pw.print(" italic=\"true\"");
-		pw.println("/>");
+			if(pw!=null) pw.print(" italic=\"true\"");
+		if(pw!=null) pw.println("/>");
 	}
 	
 	public String pathIter(double[] val, int sz){
@@ -109,42 +104,42 @@ public class GraphicsHook extends Graphics2D {
 	}
 	
 	public void pShape(String cmd, Shape s){
-		pw.println(" <"+cmd+">");
-		pw.println("  <shape>");
+		if(pw!=null) pw.println(" <"+cmd+">");
+		if(pw!=null) pw.println("  <shape>");
 		if(s!=null){
 		PathIterator pi=s.getPathIterator(null);
 		while(!pi.isDone()){
 			double ret[]=new double[6];
 			switch(pi.currentSegment(ret)){
 			case PathIterator.SEG_CLOSE:
-				pw.println("   <close/>");
+				if(pw!=null) pw.println("   <close/>");
 				break;
 			case PathIterator.SEG_CUBICTO:
-				pw.println("   <cubicto "+pathIter(ret, 3)+"/>");
+				if(pw!=null) pw.println("   <cubicto "+pathIter(ret, 3)+"/>");
 				break;
 			case PathIterator.SEG_LINETO:
-				pw.println("   <lineto "+pathIter(ret, 1)+"/>");
+				if(pw!=null) pw.println("   <lineto "+pathIter(ret, 1)+"/>");
 				break;
 			case PathIterator.SEG_MOVETO:
-				pw.println("   <moveto "+pathIter(ret, 1)+"/>");
+				if(pw!=null) pw.println("   <moveto "+pathIter(ret, 1)+"/>");
 				break;
 			case PathIterator.SEG_QUADTO:
-				pw.println("   <quadto "+pathIter(ret, 2)+"/>");
+				if(pw!=null) pw.println("   <quadto "+pathIter(ret, 2)+"/>");
 				break;
 			}
 			pi.next();
 		}
 		}
-		pw.println("  </shape>");
-		pw.println(" </"+cmd+">");
+		if(pw!=null) pw.println("  </shape>");
+		if(pw!=null) pw.println(" </"+cmd+">");
 	}
 	
 	public void p(String s, int... v){
-		pw.print(" <"+s);
+		if(pw!=null) pw.print(" <"+s);
 		for(int i=0;i<v.length;i++){
-			pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+			if(pw!=null) pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
 		}
-		pw.print("/>\n");
+		if(pw!=null) pw.print("/>\n");
 	}
 
 	public void p(int lev, String s, int... v){
@@ -154,40 +149,40 @@ public class GraphicsHook extends Graphics2D {
 	
 	public void pStr(int lev, String s, String c, float... v){
 		pl(lev);
-		pw.print("<"+s);
+		if(pw!=null) pw.print("<"+s);
 		for(int i=0;i<v.length;i++){
-			pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+			if(pw!=null) pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
 		}
-		pw.print(">"+Utils.toXMLText(c)+"</"+s+">\n");
+		if(pw!=null) pw.print(">"+Utils.toXMLText(c)+"</"+s+">\n");
 	}
 
 	public void pStr(int lev, String s, String at, String c, float... v){
 		pl(lev);
-		pw.print("<"+s+" "+at);
+		if(pw!=null) pw.print("<"+s+" "+at);
 		for(int i=0;i<v.length;i++){
-			pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+			if(pw!=null) pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
 		}
-		pw.print(">"+c+"</"+s+">\n");
+		if(pw!=null) pw.print(">"+c+"</"+s+">\n");
 	}
 	public void pKV(String s, String k, String v, int lev){
 		pl(lev);
-		pw.println("<"+s+" key=\""+k+"\" value=\""+v+"\"/>");
+		if(pw!=null) pw.println("<"+s+" key=\""+k+"\" value=\""+v+"\"/>");
 	}
 
 	public void q(String s, double... v){
-		pw.print(" <"+s);
+		if(pw!=null) pw.print(" <"+s);
 		if(v!=null)
 			for(int i=0;i<v.length;i++)
-				pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
-		pw.print("/>\n");
+				if(pw!=null) pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+		if(pw!=null) pw.print("/>\n");
 	}
 
 	public void qf(String s, float... v){
-		pw.print(" <"+s);
+		if(pw!=null) pw.print(" <"+s);
 		if(v!=null)
 			for(int i=0;i<v.length;i++)
-				pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
-		pw.print("/>\n");
+				if(pw!=null) pw.print(" v"+(i+1)+"=\""+v[i]+"\"");
+		if(pw!=null) pw.print("/>\n");
 	}
 
 	public void qf(String s, int lev, float... v){
@@ -204,22 +199,22 @@ public class GraphicsHook extends Graphics2D {
 		if(at==null)
 			return;
 		pl(lev);
-		pw.println("<affineTx>"+at.toString()+"</affineTx>");
+		if(pw!=null) pw.println("<affineTx>"+at.toString()+"</affineTx>");
 	}
 	
 	public void pl(int lev){
 		for(int i=0;i<lev;i++)
-			pw.print(" ");
+			if(pw!=null) pw.print(" ");
 	}
 	
 	public void po(String s,int lev){
 		pl(lev);
-		pw.println("<"+s+">");
+		if(pw!=null) pw.println("<"+s+">");
 	}
 	
 	public void pc(String s, int lev){
 		pl(lev);
-		pw.println("</"+s+">");
+		if(pw!=null) pw.println("</"+s+">");
 	}
 	
 	public void pi(double x, double y, Image img, Integer bgColor, int lev, AffineTransform xt) 
@@ -233,7 +228,7 @@ public class GraphicsHook extends Graphics2D {
 		else
 			po(s,1);
 		byte bs[]=toFormat(img, "png");
-		pw.println(Base64.encodeBytes(bs));
+		if(pw!=null) pw.println(Base64.encodeBytes(bs));
 		pc("Image",2);
 		flw.addPiece(new ImagePiece(pageNumber,(float)x,(float)y,img,xt));
 	}
@@ -470,12 +465,12 @@ public class GraphicsHook extends Graphics2D {
 
 	@Override
 	public void addRenderingHints(Map<?, ?> hints) {
-		pw.println(" <addRenderingHints>");
+		if(pw!=null) pw.println(" <addRenderingHints>");
 		Set<Object> keys=(Set<Object>)hints.keySet();
 		for(Object k : keys){
 			pKV("renderingHint",k.toString(),hints.get(k).toString(),2);
 		}
-		pw.println(" </addRenderingHints>");
+		if(pw!=null) pw.println(" </addRenderingHints>");
 	}
 	@Override
 	public void clip(Shape s) {
@@ -493,10 +488,8 @@ public class GraphicsHook extends Graphics2D {
 	public boolean drawImage(Image img, AffineTransform xform, ImageObserver obs) {
 		po("drawImage", 1);
 		pa(xform,2);
-		double x=xform.getTranslateX();
-		double y=xform.getTranslateY();
 		try {
-			pi(x,y,img,null,2,xform);
+			pi(0,0,img,null,2,xform);
 		}catch(IOException e){
 			p("Error");
 		}

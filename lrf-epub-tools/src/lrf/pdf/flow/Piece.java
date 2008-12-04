@@ -46,10 +46,12 @@ public abstract class Piece implements Comparable<Piece>{
 			return -1;
 		if(numPage>o.numPage)
 			return 1;
-		if(rect.getY()<o.rect.getY())
-			return -1;
-		if(rect.getY()>o.rect.getY())
-			return 1;
+		if(Math.abs(getY()-o.getY())>vtol){
+			if(getY()<o.getY())
+				return -1;
+			else 
+				return 1;
+		}
 		if(rect.getX()<o.rect.getX())
 			return -1;
 		if(rect.getX()>o.rect.getX())
@@ -71,6 +73,16 @@ public abstract class Piece implements Comparable<Piece>{
 			if(horizAdj<htol)
 				return true;
 		}
+		return false;
+	}
+	public boolean isCentered(double lb, double rb){
+		double x=getX(),w=getWidth(),lx=x+w;
+		double lefM=(double)(x-lb);
+		double rigM=(double)(rb-lx);
+		if( x>lb &&
+				lx<rb &&
+				Math.abs(lefM-rigM)<70D)
+			return true;
 		return false;
 	}
 	public boolean isOnRightBorder(double rightBorder){
@@ -111,12 +123,14 @@ public abstract class Piece implements Comparable<Piece>{
 	}
 	
 	public void hPos(double lBorder, double rBorder){
-		if(isOnLeftBorder(lBorder))
+		if(isCentered(lBorder,rBorder))
+			position=1;
+		else if(isOnLeftBorder(lBorder))
 			position=0;
 		else if(isOnRightBorder(rBorder))
 			position=2;
 		else
-			position=1;
+			position=3;
 	}
 	
 	public void vPos(double yHead, double yFoot){
