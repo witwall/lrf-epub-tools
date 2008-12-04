@@ -24,9 +24,9 @@ public class TextPiece extends Piece {
 	String txt;
 	Font font;
 	Color color;
-	int maxUsedFS=-1;
-	int maxUsedKey=-1;
-	boolean adjusted=false;
+	static int maxUsedFS=-1;
+	static int maxUsedKey=-1;
+	public static boolean adjusted=false;
 	public static Hashtable<Integer,Integer> fszs=new Hashtable<Integer,Integer>();
 	
 	public boolean isSameStyle(TextPiece tp){
@@ -88,16 +88,21 @@ public class TextPiece extends Piece {
 			}
 		}
 		doc.setTemporaryStyle(new StyleItem(StyleItem.color,"#"+color.getRGB(),false));
-		float fs=Math.round((float)font.getSize()/maxUsedKey*100)/100;
+		float fs=Math.round((float)font.getSize()/maxUsedKey*80)/100F;
 		doc.setTemporaryStyle(new StyleItem(StyleItem.fsize,""+fs+"em",false));
-		if(font.isItalic())
+		if(font.isPlain())
+			doc.setTemporaryStyle(new StyleItem(StyleItem.fstyl,"normal",false));
+		else if(font.isItalic())
 			doc.setTemporaryStyle(new StyleItem(StyleItem.fstyl,"italic",false));
 		if(font.isBold())
 			doc.setTemporaryStyle(new StyleItem(StyleItem.fweig,"bold",false));
+		else
+			doc.setTemporaryStyle(new StyleItem(StyleItem.fweig,"normal",false));
 		doc.emitText(txt);
 		if(isEndOfParagraph){
 			doc.closeDiv();
 		}
+		doc.setTemporaryStyle(new StyleItem(StyleItem.pbbef,"avoid"));
 	}
 }
 

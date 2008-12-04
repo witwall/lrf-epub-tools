@@ -23,9 +23,10 @@ public class Flower {
 	Vector<Piece> pieces=new Vector<Piece>();
 	Piece lastAdded=null;
 	
-	public void setPageDim(int width, int height){
+	public void newPage(int pn, int width, int height){
 		currentPageHeight=height;
 		currentPageWidth=width;
+		addPiece(new PageBreakPiece(pn));
 	}
 	
 	public void addPiece(Piece p){
@@ -34,7 +35,7 @@ public class Flower {
 			TextPiece pp=(TextPiece)p;
 			if( 	la.getY()==pp.getY() && 
 					la.getX()< pp.getX() &&
-					la.getX()+la.getWidth()-pp.getX()<10 &&
+					pp.getX()-(la.getX()+la.getWidth())<10 &&
 					la.isSameStyle(pp)){
 					
 				la.txt+=pp.txt;
@@ -124,6 +125,7 @@ public class Flower {
 	}
 	
 	public void dumpPieces(Vector<Piece> vpi, TextPiece until, HtmlDoc doc){
+		TextPiece.adjusted=false;
 		for(Piece p:vpi){
 			if(p.equals(until))
 				break;

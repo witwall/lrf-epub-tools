@@ -226,10 +226,9 @@ public class HtmlDoc implements EPUBEntity{
 			//Esto es innecesario
 			//e.addFile(fileName+".html", fnh, 5);
 			//Las imagenes
-			int i=0;
-			for(Enumeration<String> enu=imagenes.elements();enu.hasMoreElements();){
-				String imgfn=enu.nextElement();
-				FileInputStream fis=new FileInputStream(new File(tmp,""+(++i)));
+			for(int i=0;i<imagenes.size();i++){
+				String imgfn=imagenes.get(i+1);
+				FileInputStream fis=new FileInputStream(new File(tmp,""+(1+i)));
 				e.processFile(fis,"images/"+imgfn);
 				fis.close();
 			}

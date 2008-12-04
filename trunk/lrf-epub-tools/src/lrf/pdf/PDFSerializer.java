@@ -62,7 +62,7 @@ public class PDFSerializer {
 			//Creamos directorios padre
 			dest.getParentFile().mkdirs();
 			//Este graphicsHook lo usa pagedrawer
-			gh = new GraphicsHook(null);
+			gh = new GraphicsHook();
 			PageDrawer pdr=new PageDrawer();
 			//Titulo y autor
 			PdfReader pdfReader=new PdfReader(pdfFile.getCanonicalPath());
@@ -91,10 +91,14 @@ public class PDFSerializer {
 			epubmd.init(fh.getCanonicalPath()+".epub");
 			for(int i=0;i<pages.size();i++){
 				PDRectangle pdrect=pages.get(i).getMediaBox();
-				gh.newPage((int)pdrect.getWidth(),(int)pdrect.getHeight());
+				if(pdrect!=null)
+					gh.newPage((int)pdrect.getWidth(),(int)pdrect.getHeight());
+				else
+					gh.newPage(600, 800);
 				pdr.drawPage(gh, pages.get(i), dim);
 				if(i%30==0){
-					System.out.print("·");
+					System.out.print("-");
+					System.out.flush();
 				}
 				gh.getFlower().managePieces(htm);
 			}
