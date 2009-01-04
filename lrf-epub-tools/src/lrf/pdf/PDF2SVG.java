@@ -24,27 +24,21 @@ public class PDF2SVG {
 	public static File dirOrig=new File("D:\\tmp\\booksPDF");
 	public static File dirDest=new File("D:\\tmp\\booksPDF");
 	public static boolean noo=false;
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		recurse(dirOrig);
-	}
 
-	public static void recurse(File dir){
+	public static void recurse(File dir, String lang){
 		File list[]=dir.listFiles();
 		for(int i=0;i<list.length;i++){
 			if(list[i].isDirectory()){
-				recurse(list[i]);
+				recurse(list[i],lang);
 			}else if(list[i].getName().toLowerCase().endsWith(".pdf")){
-				procPDF(list[i]);
+				procPDF(list[i],lang);
 			}
 		}
 	}
 	
 
 	@SuppressWarnings("unchecked")
-	public static void procPDF(File pdfFile){
+	public static void procPDF(File pdfFile, String lang){
 
         // Ask the test to render into the SVG Graphics2D implementation.
         String x=null,y=null;
@@ -70,7 +64,7 @@ public class PDF2SVG {
 			if(author==null)
 				author="Unknown Author";
 			pdfReader.close();
-			PDF2EPUB_SVG epub=new PDF2EPUB_SVG(title,author);
+			PDF2EPUB_SVG epub=new PDF2EPUB_SVG(title,author,lang);
 			epub.init(dest.getCanonicalPath());
 			System.out.print("Processing "+pdfFile.getName());
 			for(int i=0;i<pages.size();i++){

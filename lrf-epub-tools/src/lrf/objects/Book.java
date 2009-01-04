@@ -106,11 +106,13 @@ public class Book extends EPUBMetaData implements Serializable {
 	int xorKey = 0;
 
 	public Book(File fname) throws Exception {
+		super("");
 		lrfFile=fname;
 		MappedReader pb=new MappedReader(fname);
 		getMetaData(pb);
 		// Ahora cargamos los objetos
 		loadObjects(pb);
+		language=getFromMD("</Language>");
 	}
 	public String getAuth() {
 		return getFromMD("</Author>");
@@ -148,6 +150,7 @@ public class Book extends EPUBMetaData implements Serializable {
 		HtmlOptimizer opt=new HtmlOptimizer(htmldoc,tmpfDir);
 		opt.setPaginateKB(150);
 		int pages=opt.optimize(true);
+		opt.ratStyles();
 		buildCSS(fileName+".css", opt.getStyles());
 		//Generamos epub
 		//xhtml
@@ -210,11 +213,6 @@ public class Book extends EPUBMetaData implements Serializable {
 		return getBookID();
 	}
 	
-	@Override
-	public String getLanguage() {
-		return getFromMD("</Language>");
-	}
-
 	private void getMetaData(Reader pb) throws IOException,
 			UnsupportedEncodingException {		
 		version = pb.getShort(8);

@@ -10,7 +10,8 @@ import lrf.epub.EPUBMetaData;
 public class PDF2EPUB_SVG extends EPUBMetaData {
 	String title,author,id;
 	
-	public PDF2EPUB_SVG(String tit, String aut){
+	public PDF2EPUB_SVG(String tit, String aut, String lang){
+		super(lang);
 		title=tit;
 		author=aut;
 		id=createRandomIdentifier();
@@ -24,11 +25,6 @@ public class PDF2EPUB_SVG extends EPUBMetaData {
 	@Override
 	public String getIdentifier() {
 		return id;
-	}
-
-	@Override
-	public String getLanguage() {
-		return "en";
 	}
 
 	@Override
