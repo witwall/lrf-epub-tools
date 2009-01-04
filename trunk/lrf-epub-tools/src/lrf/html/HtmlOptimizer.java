@@ -42,6 +42,7 @@ public class HtmlOptimizer {
 	String css = null;
 	File dirOut;
 	Hashtable<String, String> estilos;
+	Hashtable<String, Integer> statStyleData;
 	File fileHtml;
 	Node head = null;
 
@@ -163,6 +164,7 @@ public class HtmlOptimizer {
 		bos = new ByteArrayOutputStream();
 		pw = new PrintWriter(bos);
 		estilos = new Hashtable<String, String>();
+		statStyleData=new Hashtable<String, Integer>();
 		head = null;
 		beginPage = true;
 		pageNumber = 1;
@@ -236,6 +238,10 @@ public class HtmlOptimizer {
 			cname = "st" + padZeros(++styleNumber);
 			estilos.put(styleVal, cname);
 		}
+		if(statStyleData.get(cname)==null)
+			statStyleData.put(cname, 1);
+		else
+			statStyleData.put(cname, statStyleData.get(cname)+1);
 		style.setUserData("class", cname, null);
 	}
 
@@ -308,5 +314,44 @@ public class HtmlOptimizer {
 	public void setPaginateKB(int in) {
 		paginateKB = in;
 	}
-
+	
+	public void ratStyles(){
+		int max=-1;
+		//Most used style name: font-size to 0.8em
+		String cn="";
+		Enumeration<String> style=estilos.keys();
+		Hashtable<String, String> rev=new Hashtable<String, String>();
+		for(int i=0;i<statStyleData.size();i++){
+			String ek=style.nextElement();
+			String ev=estilos.get(ek);
+			rev.put(ev, ek);
+			if(ek.contains("font-size") && max<statStyleData.get(ev)){
+				max=statStyleData.get(ev);
+				cn=ev;
+			}	
+		}
+		HtmlStyle mostUsed=new HtmlStyle(rev.get(cn));
+		StyleItem fs=mostUsed.getStyle("font-size");
+		float dividefactor=1.0F;
+		if(fs.unit==null || fs.unit.length()==0){
+			dividefactor=fs.number / 0.8f;
+		}
+		for(Enumeration<String> e=rev.keys();e.hasMoreElements();){
+			String cs=e.nextElement();
+			HtmlStyle hs=new HtmlStyle(rev.get(cs));
+			hs.removeStyle("line-height");
+			StyleItem si=hs.getStyle("font-size");
+			if(si!=null){
+				si.number/=dividefactor;
+				si.unit="em";
+				rev.put(cs, hs.toString());
+			}
+		}
+		estilos=new Hashtable<String, String>();
+		for(Enumeration<String> n=rev.keys();n.hasMoreElements();){
+			String nnn=n.nextElement();
+			estilos.put(rev.get(nnn), nnn);
+			
+		}
+	}
 }

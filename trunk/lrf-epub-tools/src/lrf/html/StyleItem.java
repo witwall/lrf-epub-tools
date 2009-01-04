@@ -220,6 +220,8 @@ public class StyleItem implements Comparable<StyleItem>{
 				float conv= number / getCoef();
 				float ems = ((int)(((conv/12)+0.5F)*10))/10F ;
 				return propName+":"+ems+"em";
+			}else if(unit.equalsIgnoreCase("em")){
+				return propName+":"+(((int)((number)*10))/10F)+"em";
 			}else{
 				float conv= number / getCoef();
 				float nems = ((int)((conv)*10))/10F ;
