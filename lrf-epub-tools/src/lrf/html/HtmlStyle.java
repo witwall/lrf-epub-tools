@@ -3,6 +3,7 @@ package lrf.html;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import lrf.objects.tags.Tag;
@@ -15,6 +16,20 @@ import lrf.objects.tags.Tag;
 public class HtmlStyle {
 	
 	Hashtable<String,StyleItem> vitems=new Hashtable<String,StyleItem>();
+	
+	public HtmlStyle(String list){
+		StringTokenizer st=new StringTokenizer(list,";");
+		while(st.hasMoreTokens()){
+			String style=st.nextToken();
+			int pdp=style.indexOf(":");
+			if(pdp>=0){
+				String name=style.substring(0, pdp).trim();
+				String value=style.substring(pdp+1).trim();
+				vitems.put(name, new StyleItem(name,value));
+			}
+		}
+	}
+	
 	/**
 	 * Inicializa el contenido de style
 	 * @param vi
@@ -42,6 +57,14 @@ public class HtmlStyle {
 	
 	public StyleItem getStyle(String name){
 		return vitems.get(name);
+	}
+	
+	public void putStyle(StyleItem si){
+		vitems.put(si.propName, si);
+	}
+	
+	public void removeStyle(String name){
+		vitems.remove(name);
 	}
 	
 	private void addTags(Vector<Tag> tgs) {
