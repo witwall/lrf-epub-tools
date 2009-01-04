@@ -344,7 +344,7 @@ public class HtmlOptimizer {
 			if(si!=null){
 				si.number/=dividefactor;
 				si.unit="em";
-				rev.put(cs, hs.toString());
+				rev.put(cs, hs.getStyleContent(StyleItem.st_all));
 			}
 		}
 		estilos=new Hashtable<String, String>();
