@@ -111,7 +111,7 @@ public class RecurseDirs {
 	}
 
 	private boolean mergeEPUBActionParams(String[] args) throws Exception {
-		String aut=null,tit=null;
+		String aut=null,tit=null,lang="en";
 		for (int i = 1; i < args.length; i++) {
 			if (i == 1) {
 				root = new File(args[i]);
@@ -129,11 +129,15 @@ public class RecurseDirs {
 				tit=args[++i];
 				continue;
 			}
+			if(args[i].equalsIgnoreCase("-l")){
+				lang=args[++i];
+				continue;
+			}
 		}
 		if (root == null || mergedFile==null || tit==null || aut==null) {
 			UsageAndExit();
 		}
-		MergeEPUBAndTOC m=new MergeEPUBAndTOC(new File(mergedFile),tit,aut);
+		MergeEPUBAndTOC m=new MergeEPUBAndTOC(new File(mergedFile),tit,aut,lang);
 		mergeEPUBAction(root, m);
 		m.close();
 		return true;
@@ -197,6 +201,7 @@ public class RecurseDirs {
 
 	private boolean convertPDFActionParams(String[] args){
 		File dirOut=null;
+		String lang="en";
 		for (int i = 1; i < args.length; i++) {
 			if (i == 1) {
 				root = new File(args[i]);
@@ -215,16 +220,18 @@ public class RecurseDirs {
 				noo = true;
 			if (args[i].equalsIgnoreCase("-svg"))
 				assvg = true;
+			if (args[i].equalsIgnoreCase("-l"))
+				lang = args[++i];
 		}
 		if(assvg){
 			PDF2SVG.dirDest=dirOut;
 			PDF2SVG.dirOrig=root;
 			PDF2SVG.noo=noo;
-			PDF2SVG.recurse(root);
+			PDF2SVG.recurse(root,lang);
 		}else{
 			PDFSerializer.dirDest=dirOut;
 			PDFSerializer.dirOrig=root;
-			PDFSerializer.recurse(root);
+			PDFSerializer.recurse(root,lang);
 		}
 		return true;
 	}

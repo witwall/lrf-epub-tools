@@ -11,12 +11,12 @@ public class TreeDir extends EPUBMetaData {
 	Hashtable<String, String> pars=new Hashtable<String, String>();
 	
 	public TreeDir(File dir, String auth, String title) throws Exception{
-		super("d:\\tmp\\books.epub");
+		super("d:\\tmp\\books.epub","en");
 		this.dir=dir;
 		dirCanonicalPath=dir.getCanonicalPath();
 		pars.put("creator", auth);
 		pars.put("identifier", createRandomIdentifier());
-		pars.put("language", "es");
+		pars.put("language", "en");
 		pars.put("rights", "free");
 		pars.put("publisher", "");
 		pars.put("title", title);
@@ -64,11 +64,6 @@ public class TreeDir extends EPUBMetaData {
 	@Override
 	public String getIdentifier() {
 		return pars.get("identifier");
-	}
-
-	@Override
-	public String getLanguage() {
-		return pars.get("language");
 	}
 
 	@Override

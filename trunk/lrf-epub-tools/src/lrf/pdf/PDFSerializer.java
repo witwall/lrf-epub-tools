@@ -23,34 +23,27 @@ public class PDFSerializer {
 
 	public static File dirOrig=new File("D:\\tmp\\booksPDF");
 	public static File dirDest=new File("D:\\tmp\\booksPDF");
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		EPUBMetaData.doNotEmbedOTFFonts=true;
-		recurse(dirOrig);
-	}
 
-	public static void recurse(File dir){
+	public static void recurse(File dir, String lang){
 		File list[]=dir.listFiles();
 		for(int i=0;i<list.length;i++){
 			if(list[i].isDirectory()){
-				recurse(list[i]);
+				recurse(list[i], lang);
 			}else if(list[i].getName().toLowerCase().endsWith(".pdf")){
-				procPDF(list[i]);
+				procPDF(list[i], lang);
 			}
 		}
 	}
 	
-	public static void procPDF(File pdfFile, File ori, File des, boolean otfem){
+	public static void procPDF(File pdfFile, File ori, File des, boolean otfem, String lang){
 		EPUBMetaData.doNotEmbedOTFFonts=otfem;
 		dirOrig=ori;
 		dirDest=des;
-		procPDF(pdfFile);
+		procPDF(pdfFile, lang);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void procPDF(File pdfFile){
+	public static void procPDF(File pdfFile, String lang){
 		GraphicsHook gh=null;
 		boolean ok=true;
 		String x=null,y=null;
@@ -87,7 +80,7 @@ public class PDFSerializer {
 					EPUBMetaData.createRandomIdentifier(),
 					tmp
 					);
-			EPUBMetaData epubmd=new PDF2EPUB_HTML(title,author);
+			EPUBMetaData epubmd=new PDF2EPUB_HTML(title,author,lang);
 			epubmd.init(fh.getCanonicalPath()+".epub");
 			for(int i=0;i<pages.size();i++){
 				PDRectangle pdrect=pages.get(i).getMediaBox();

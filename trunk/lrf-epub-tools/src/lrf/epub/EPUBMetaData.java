@@ -25,6 +25,8 @@ import org.w3c.tidy.Tidy;
 
 public abstract class EPUBMetaData {
 
+	public String language=null;
+	
 	public static final String ffam="Linux Libertine O";
 	public static boolean doNotEmbedOTFFonts=false;
 	public static String[][] otfDefs={
@@ -74,7 +76,9 @@ public abstract class EPUBMetaData {
 
 	public abstract String getIdentifier();
 
-	public abstract String getLanguage();
+	public final String getLanguage(){
+		return language;
+	}
 
 	/**
 	 * Nodo raiz del TOC
@@ -92,11 +96,13 @@ public abstract class EPUBMetaData {
 		return spineItems;
 	}
 
-	protected EPUBMetaData(){
+	protected EPUBMetaData(String lang){
+		language=lang;
 		rootNavMap= new XMLNode("navMap", null, null,false);
 	}
 	
-	protected EPUBMetaData(String epfn) throws Exception {
+	protected EPUBMetaData(String epfn,String lang) throws Exception {
+		language=lang;
 		rootNavMap= new XMLNode("navMap", null, null,false);
 		init(epfn);
 	}
@@ -339,6 +345,9 @@ public abstract class EPUBMetaData {
 	
 	public void processFile(InputStream is, String epubUrl) throws IOException,
 			FileNotFoundException {
+		
+		epubUrl=Utils.toUnhandText(epubUrl);
+		
 		String fnl = epubUrl.toLowerCase();
 		if (fnl.endsWith(".html")) {
 			String contenido = htmlToXhtml(is);
@@ -431,6 +440,7 @@ public abstract class EPUBMetaData {
 			tosort[i++]=v;
 		}
 		Arrays.sort(tosort);
+		
 		for(i=0;i<tosort.length;i++){
 			String na=tosort[i];
 			String st=reverse.get(na);

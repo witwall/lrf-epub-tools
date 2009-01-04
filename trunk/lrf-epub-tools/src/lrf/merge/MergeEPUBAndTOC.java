@@ -77,11 +77,6 @@ public class MergeEPUBAndTOC extends EPUBMetaData{
 	}
 
 	@Override
-	public String getLanguage() {
-		return "en";
-	}
-
-	@Override
 	public String getPublisher() {
 		return "Unknown";
 	}
@@ -101,7 +96,9 @@ public class MergeEPUBAndTOC extends EPUBMetaData{
 		return title;
 	}
 
-	public MergeEPUBAndTOC(File destFile, String title, String auth) throws FileNotFoundException, IOException{
+	public MergeEPUBAndTOC(File destFile, String title, String auth, String lang) 
+	throws FileNotFoundException, IOException{
+		super(lang);
 		this.title=title;
 		this.autor=auth;
 		dest=destFile;
