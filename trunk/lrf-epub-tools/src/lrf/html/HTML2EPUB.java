@@ -24,11 +24,6 @@ public class HTML2EPUB extends EPUBMetaData {
 	}
 
 	@Override
-	public String getLanguage() {
-		return "es";
-	}
-
-	@Override
 	public String getPublisher() {
 		return "LRFTools";
 	}
@@ -48,7 +43,9 @@ public class HTML2EPUB extends EPUBMetaData {
 		return title;
 	}
 	
-	public HTML2EPUB(String fname,String id, String tit, String aut) throws Exception{
+	public HTML2EPUB(String fname,String id, String tit, String aut,String lang) 
+	throws Exception{
+		super(lang);
 		title=tit;
 		creator=aut;
 		this.id=id;
@@ -84,18 +81,5 @@ public class HTML2EPUB extends EPUBMetaData {
 		}
 		close();
 	}
-	
-	public static void main(String args[]){
-		try {
-			HTML2EPUB uno=new HTML2EPUB(
-				"d:\\tmp\\Vazquez Figueroa, Alberto-Maremagnum.htm",
-				"djkh",
-				"Maremagnum",
-				"Vazquez Figueroa, Alberto");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	
 }
