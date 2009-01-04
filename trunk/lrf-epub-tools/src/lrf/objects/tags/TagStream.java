@@ -104,7 +104,7 @@ public class TagStream extends Tag {
 			} else if ((streamFlags & 0x0f) == 3) {
 				imageType = ".bmp";
 			} else {
-				imageType = ".unk";
+				imageType = ".png";
 			}
 		}
 		if (((streamFlags & 0x100) == 0x100)) {
