@@ -21,7 +21,6 @@ import lrf.objects.tags.Tag;
 public class HtmlDoc implements EPUBEntity{
 	public String title,fNam,auth,id,producer;
 	public File tmp;
-	public int numIm=0;
 	public Hashtable<Integer,String> imagenes=new Hashtable<Integer,String>();
 	ByteArrayOutputStream bos;
 	PrintWriter pw;
@@ -153,9 +152,8 @@ public class HtmlDoc implements EPUBEntity{
 			throws Exception {
 		String imgfn=imagenes.get(id);
 		if(imgfn==null){
-			numIm++;
-			imgfn=Utils.toUnhandText(fNam+numIm+ext);
-			FileOutputStream fosi=new FileOutputStream(new File(tmp,""+numIm));
+			imgfn=Utils.toUnhandText(fNam+id+ext);
+			FileOutputStream fosi=new FileOutputStream(new File(tmp,""+id));
 			fosi.write(b);
 			fosi.close();
 			imagenes.put(id,imgfn);
@@ -226,9 +224,11 @@ public class HtmlDoc implements EPUBEntity{
 			//Esto es innecesario
 			//e.addFile(fileName+".html", fnh, 5);
 			//Las imagenes
+			Enumeration<Integer> kyss=imagenes.keys();
 			for(int i=0;i<imagenes.size();i++){
-				String imgfn=imagenes.get(i+1);
-				FileInputStream fis=new FileInputStream(new File(tmp,""+(1+i)));
+				int id=kyss.nextElement();
+				String imgfn=imagenes.get(id);
+				FileInputStream fis=new FileInputStream(new File(tmp,""+id));
 				e.processFile(fis,"images/"+imgfn);
 				fis.close();
 			}
