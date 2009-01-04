@@ -56,7 +56,7 @@ Actions:
  PDF file with a TOC pointing to each old single document. LRF files are 
  converted first to PDF.
  
-6) mergeEPUB dir -o grouped.epub
+6) mergeEPUB dir -a author -t title -o grouped.epub
  
  Merge all EPUB files contained at dir (with recursion) into one new EPUB 
  file with a TOC pointing to each old single document.
