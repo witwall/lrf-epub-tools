@@ -33,13 +33,12 @@ Actions:
  
  You cannot output HTML files to a zipfile right now.
 
-2) convertPDF dir (-d dirOut) -SVG (-noo)
+2) convertPDF dir (-d dirOut) [-noo|-SVG|-noe|-nopb]
  
-  Converts every PDF in 'dir' (with recursion) to EPUB format. Right now
-  the conversion is performed creating a SVG (Scalable Vector Graphics) for
-  each page, supported by the EPUB specification. I'm working to create a 
-  PDF to XHTML version to allow font sizes to be resized on the device.
-	
+  Converts every PDF in 'dir' (with recursion) to EPUB format.
+  -SVG means use batik to generate Scalable Vector Graphics for each page
+  Other options same as convertLRF.
+   
 3) view
  
  Shows GUI to view epub files.
