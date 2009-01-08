@@ -27,7 +27,7 @@ import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.xml.xmp.XmpWriter;
 
 public class RecurseDirs {
-	public static boolean xml, pdf, rtf, html, rdi, epub, noo,nopb, assvg;
+	public static boolean xml, pdf, rtf, html, rdi, epub, noo, assvg;
 	public static String catpar=null;
 	public static ZipOutputStream zout = null;
 	public static String mergedFile=null;
@@ -222,7 +222,12 @@ public class RecurseDirs {
 				assvg = true;
 			if (args[i].equalsIgnoreCase("-l"))
 				lang = args[++i];
-		}
+			if (args[i].equalsIgnoreCase("-noe"))
+				EPUBMetaData.doNotEmbedOTFFonts = true;
+			if (args[i].equalsIgnoreCase("-nopb"))
+				BaseRenderer.noPageBreakEmit = true;
+
+}
 		if(assvg){
 			PDF2SVG.dirDest=dirOut;
 			PDF2SVG.dirOrig=root;
