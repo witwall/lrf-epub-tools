@@ -486,6 +486,8 @@ public class GraphicsHook extends Graphics2D {
 	}
 	@Override
 	public boolean drawImage(Image img, AffineTransform xform, ImageObserver obs) {
+		if(img.getHeight(null)<3)
+			return false;
 		po("drawImage", 1);
 		pa(xform,2);
 		try {
