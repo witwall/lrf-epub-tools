@@ -71,7 +71,7 @@ public class HTML2EPUB extends EPUBMetaData {
 		HtmlOptimizer opt=new HtmlOptimizer(xhtmlFile,dirOfHTMLFile);
 		opt.setPaginateKB(150);
 		int pages=opt.optimize(true);
-		buildCSS(nameNoExt+".css", opt.getStyles());
+		buildCSS(nameNoExt+".css", opt.getStyles(),false);
 		//Generamos epub
 		//xhtml
 		for(int i=0;i<pages;i++){

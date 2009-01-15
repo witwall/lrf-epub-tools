@@ -150,8 +150,8 @@ public class Book extends EPUBMetaData implements Serializable {
 		HtmlOptimizer opt=new HtmlOptimizer(htmldoc,tmpfDir);
 		opt.setPaginateKB(150);
 		int pages=opt.optimize(true);
-		opt.ratStyles();
-		buildCSS(fileName+".css", opt.getStyles());
+		opt.ratStyles(true);
+		buildCSS(fileName+".css", opt.getStyles(),false);
 		//Generamos epub
 		//xhtml
 		for(int i=0;i<pages;i++){

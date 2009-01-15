@@ -126,6 +126,21 @@ public class Flower {
 	
 	public void dumpPieces(Vector<Piece> vpi, TextPiece until, HtmlDoc doc){
 		TextPiece.adjusted=false;
+		//Primero acumulamos los textos con los mismos estilos.
+		for(int i=0;i<pieces.size()-1 && !pieces.get(i+1).equals(until);i++){
+			Piece p=pieces.get(i);
+			Piece q=pieces.get(i+1);
+			if(p instanceof TextPiece && q instanceof TextPiece){
+				TextPiece tpp=(TextPiece)p;
+				TextPiece tpq=(TextPiece)q;
+				if(tpp.sameStyles(tpq)){
+					//Agruparlos en p
+					tpp.txt+=tpq.txt;
+					pieces.remove(i+1);
+					i--;
+				}
+			}
+		}
 		for(Piece p:vpi){
 			if(p.equals(until))
 				break;
