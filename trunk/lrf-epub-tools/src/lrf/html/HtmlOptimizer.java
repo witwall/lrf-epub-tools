@@ -315,7 +315,7 @@ public class HtmlOptimizer {
 		paginateKB = in;
 	}
 	
-	public void ratStyles(){
+	public void ratStyles(boolean removeLH){
 		int max=-1;
 		//Most used style name: font-size to 0.8em
 		String cn="";
@@ -339,7 +339,8 @@ public class HtmlOptimizer {
 		for(Enumeration<String> e=rev.keys();e.hasMoreElements();){
 			String cs=e.nextElement();
 			HtmlStyle hs=new HtmlStyle(rev.get(cs));
-			hs.removeStyle("line-height");
+			if(removeLH)
+				hs.removeStyle("line-height");
 			StyleItem si=hs.getStyle("font-size");
 			if(si!=null){
 				si.number/=dividefactor;

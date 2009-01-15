@@ -86,6 +86,7 @@ public class TextPiece extends Piece {
 			case 2: doc.setTemporaryStyle(new StyleItem(StyleItem.talig,"right",false)); break;
 			case 3: doc.setTemporaryStyle(new StyleItem(StyleItem.talig,"justify",false)); break;
 			}
+			doc.newParagraph();
 		}
 		doc.setTemporaryStyle(new StyleItem(StyleItem.color,"#"+color.getRGB(),false));
 		float fs=Math.round((float)font.getSize()/maxUsedKey*80)/100F;
@@ -103,6 +104,22 @@ public class TextPiece extends Piece {
 			doc.closeDiv();
 		}
 		doc.setTemporaryStyle(new StyleItem(StyleItem.pbbef,"avoid"));
+	}
+	
+	public boolean sameStyles(TextPiece other){
+		if(font.getSize()!=other.font.getSize())
+			return false;
+		if(font.isItalic()!=other.font.isItalic())
+			return false;
+		if(other.isStartOfParagraph)
+			return false;
+		if(color.getRGB()!=other.color.getRGB())
+			return false;
+		if(font.isBold()!=other.font.isBold())
+			return false;
+		if(font.isPlain()!=other.font.isPlain())
+			return false;
+		return true;
 	}
 }
 

@@ -230,5 +230,11 @@ public class StyleItem implements Comparable<StyleItem>{
 		}
 	}
 	
+	public String getValue(){
+		return value;
+	}
 
+	public float getNumber(){
+		return number;
+	}
 }

@@ -20,6 +20,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import lrf.Utils;
+import lrf.html.HtmlStyle;
+import lrf.html.StyleItem;
 
 import org.w3c.tidy.Tidy;
 
@@ -413,7 +415,7 @@ public abstract class EPUBMetaData {
 		return contenido;
 	}
 
-	public void buildCSS(String epubUrl, Hashtable<String, String> estilos) 
+	public void buildCSS(String epubUrl, Hashtable<String, String> estilos, boolean putLineHeight) 
 	throws FileNotFoundException, IOException{
 		//Volcamos los estilos
 		ByteArrayOutputStream bos=new ByteArrayOutputStream();
@@ -436,6 +438,10 @@ public abstract class EPUBMetaData {
 		for(Enumeration<String> keys=estilos.keys();keys.hasMoreElements();){
 			String k=keys.nextElement();
 			String v=estilos.get(k);
+			//Comprobamos que no tiene lineHeight
+			if(putLineHeight && k.contains("text-indent") && !k.contains("line-height")){
+				k+=";line-height:0.9em";
+			}
 			reverse.put(v, k);
 			tosort[i++]=v;
 		}

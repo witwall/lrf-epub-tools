@@ -105,7 +105,7 @@ public class PDFSerializer {
 			HtmlOptimizer opt=new HtmlOptimizer(htm,tmp);
 			opt.setPaginateKB(150);
 			int numPages=opt.optimize(true);
-			epubmd.buildCSS(fh.getName()+".css", opt.getStyles());
+			epubmd.buildCSS(fh.getName()+".css", opt.getStyles(),true);
 			//Generamos epub
 			//xhtml
 			for(int i=0;i<numPages;i++){
