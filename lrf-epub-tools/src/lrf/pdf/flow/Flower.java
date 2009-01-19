@@ -95,6 +95,7 @@ public class Flower {
 						last.isEndOfParagraph=false;
 						current.isStartOfParagraph=false;
 						current.isEndOfParagraph=true;
+						current.txt=" "+current.txt;
 						lengthOfText+=current.getWidth();
 					}else{
 						//Fin de paragraph. Hay que comprobar si son head o foot
