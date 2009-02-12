@@ -117,7 +117,7 @@ public abstract class Piece implements Comparable<Piece>{
 
 	public String toString(){
 		if(this instanceof TextPiece)
-			return "("+getX()+","+getY()+","+getWidth()+","+getHeight()+")"+((TextPiece)this).txt;
+			return ((TextPiece)this).txt+"("+getX()+","+getY()+","+getWidth()+","+getHeight()+")";
 		else
 			return "("+getX()+","+getY()+","+getWidth()+","+getHeight()+")imagen";
 	}
