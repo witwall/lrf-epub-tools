@@ -32,17 +32,17 @@ public class Emitter {
 		  " <meta name=\"author\" content=\"" +auth+ "\"/>\n" +
 		  " <meta name=\"BookID\" content=\"" +id+"\"/>\n" +
 		  " <link href=\"" +cssFileName+"\" rel=\"stylesheet\" type=\"text/css\" />\n" +
-		"</head>";
+		"</head>\n";
 	}
 	
 	public static String divOpen(HtmlStyle ds){
 		if(ds==null)
-			return "<div>\n";
-		return "<div style=\""+ds.getStyleContent(StyleItem.st_div)+"\">\n";
+			return "<div>";
+		return "<div style=\""+ds.getStyleContent(StyleItem.st_div)+"\">";
 	}
 	
 	public static String divClose(){
-		return "</div>\n";
+		return "</div>";
 	}
 
 	public static String spanOpen(HtmlStyle ss){
