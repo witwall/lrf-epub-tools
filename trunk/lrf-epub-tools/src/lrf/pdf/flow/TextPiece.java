@@ -88,7 +88,7 @@ public class TextPiece extends Piece {
 			}
 			doc.newParagraph();
 		}
-		doc.setTemporaryStyle(new StyleItem(StyleItem.color,"#"+color.getRGB(),false));
+		doc.setTemporaryStyle(new StyleItem(StyleItem.color,"#"+Integer.toHexString(color.getRGB()).substring(2),false));
 		float fs=Math.round((float)font.getSize()/maxUsedKey*80)/100F;
 		doc.setTemporaryStyle(new StyleItem(StyleItem.fsize,""+fs+"em",false));
 		if(font.isPlain())
