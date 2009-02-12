@@ -105,7 +105,7 @@ public class StyleItem implements Comparable<StyleItem>{
 		case 0x16: // FontFaceName
 			return new StyleItem("font-family",t.getStringVal());
 		case 0x17: // TextColor
-			return new StyleItem("color","#"+t.getValueAt(0));
+			return new StyleItem("color","#"+Integer.toHexString(t.getValueAt(0)).substring(2));
 		case 0x3C: //BlockAlignment
 			int tj=t.getValueAt(0);
 			switch(tj){
