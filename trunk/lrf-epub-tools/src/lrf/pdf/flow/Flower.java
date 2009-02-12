@@ -3,6 +3,8 @@ package lrf.pdf.flow;
 import java.util.Collections;
 import java.util.Vector;
 
+import com.lowagie.text.Font;
+
 import lrf.html.HtmlDoc;
 
 
@@ -30,24 +32,6 @@ public class Flower {
 	}
 	
 	public void addPiece(Piece p){
-		if(lastAdded!=null && lastAdded instanceof TextPiece && p instanceof TextPiece){
-			TextPiece la=(TextPiece)lastAdded;
-			TextPiece pp=(TextPiece)p;
-			if( 	la.getY()==pp.getY() && 
-					la.getX()< pp.getX() &&
-					pp.getX()-(la.getX()+la.getWidth())<10 &&
-					la.isSameStyle(pp)){
-					
-				la.txt+=pp.txt;
-				la.rect.setRect(
-						la.getX(), 
-						la.getY(), 
-						la.getWidth()+pp.getWidth(), 
-						la.getHeight());
-				return;
-			}
-		}
-		lastAdded=p;
 		pieces.add(p);
 	}
 	
@@ -58,6 +42,51 @@ public class Flower {
 		//dentro de cada pagina por altura (y) y luego por
 		//posicion x.
 		Collections.sort(pieces);
+		//Retiramos el efecto BOLD simulado (dos veces en 1 pixel)
+		TextPiece p1=null,p2=null;
+		for(int i=0;i<pieces.size();i++){
+			Piece p=pieces.get(i);
+			if(!(p instanceof TextPiece))
+				continue;
+			p2=(TextPiece)p;
+			if(p1==null){
+				p1=p2;
+				continue;
+			}
+			if(    p1.getY()+p1.getHeight()>p2.getY()
+				&& p1.getX()+p1.getWidth()>p2.getX()
+				&& p1.txt.equals(p2.txt)	){
+				//p1.font=p1.font.deriveFont(Font.BOLD);
+				//Borramos p2
+				pieces.remove(i);
+				i--;
+				continue;
+			}
+			p1=p2;
+		}
+		//y unimos el texto adyacente
+		for(int i=0;i<pieces.size();i++){
+			Piece p=pieces.get(i);
+			if(!(p instanceof TextPiece))
+				continue;
+			p2=(TextPiece)p;
+			if(p1==null){
+				p1=p2;
+				continue;
+			}
+			if( 	Math.abs(p1.getY()-p2.getY())<Piece.vtol 
+					&& p1.getX()< p2.getX() 
+					//&& p2.getX()-(p1.getX()+p1.getWidth())<10
+					//&& p1.isSameStyle(p2)
+			){
+				p1.txt+=p2.txt;
+				p1.rect.setRect(p1.getX(),p1.getY(),p1.getWidth()+p2.getWidth(),p1.getHeight());
+				pieces.remove(i);
+				i--;
+				continue;
+			}
+			p1=p2;
+		}
 		//Inicializamos algunas variables
 		TextPiece last=null;
 		TextPiece lastSOP=null;
