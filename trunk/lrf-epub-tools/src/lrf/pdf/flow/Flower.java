@@ -148,9 +148,10 @@ public class Flower {
 		}
 		dumpPieces(pieces,lastSOP,doc);
 		Vector<Piece> preserve=new Vector<Piece>();
-		for(int pos=pieces.indexOf(lastSOP);pos<pieces.size();pos++){
-			preserve.add( pieces.get(pos) );
-		}
+		if(lastSOP!=null)
+			for(int pos=pieces.indexOf(lastSOP);pos<pieces.size();pos++){
+				preserve.add( pieces.get(pos) );
+			}
 		pieces=preserve;
 	}
 	
