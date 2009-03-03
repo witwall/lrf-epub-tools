@@ -38,24 +38,29 @@ Actions:
   Converts every PDF in 'dir' (with recursion) to EPUB format.
   -SVG means use batik to generate Scalable Vector Graphics for each page
   Other options same as convertLRF.
+  
+3) convertDOCX dir (-d dirOut) [-noo|-noe|nopb]
+  
+  Converts every OpenXML file (Word 2007 docx files) to EPUB format.
+  Other options same as convertLRF.
    
-3) view
+4) view
  
  Shows GUI to view epub files.
   
-4) updfmd  dir
+5) updfmd  dir
 
  Search dir recursively, expecting PDF filenames 'BookAuthor-BookTitle.pdf' 
  and modifies metadata of PDF to reflect BookAuthor and BookTitle so our 
  Sony PRS can catalog the book conveniently.
 	
-5) mergePDF dir -o grouped.pdf
+6) mergePDF dir -o grouped.pdf
 
  Merge all PDF and LRF files contained at dir (with recursion) into one new 
  PDF file with a TOC pointing to each old single document. LRF files are 
  converted first to PDF.
  
-6) mergeEPUB dir -a author -t title -o grouped.epub
+7) mergeEPUB dir -a author -t title -o grouped.epub
  
  Merge all EPUB files contained at dir (with recursion) into one new EPUB 
  file with a TOC pointing to each old single document.

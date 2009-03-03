@@ -20,6 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 public class HtmlOptimizer {
 	class pair {
@@ -159,7 +160,8 @@ public class HtmlOptimizer {
 		procStyles = processStyles;
 
 		DOMParser p = new DOMParser();
-		p.parse("file:///"+fileHtml.getAbsolutePath());
+		String uriOfFile="file:///"+fileHtml.getAbsolutePath();
+		p.parse(uriOfFile);
 		Document doc = p.getDocument();
 		bos = new ByteArrayOutputStream();
 		pw = new PrintWriter(bos);
