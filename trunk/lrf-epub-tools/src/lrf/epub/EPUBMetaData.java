@@ -20,8 +20,6 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import lrf.Utils;
-import lrf.html.HtmlStyle;
-import lrf.html.StyleItem;
 
 import org.w3c.tidy.Tidy;
 
@@ -356,7 +354,7 @@ public abstract class EPUBMetaData {
 			String xurl = epubUrl.substring(0, epubUrl.length() - 5) + ".xhtml";
 			mftAddNodoAndSpine(xurl, true);
 			addMemoryContent(xurl, contenido, 5);
-		} else if (fnl.endsWith(".jpg")) {
+		} else if (fnl.endsWith(".jpg") || fnl.endsWith(".jpeg")) {
 			mftAddNodoAndSpine(epubUrl, false);
 			addIS(epubUrl, is, 5);
 		} else if (fnl.endsWith(".png")) {
@@ -401,7 +399,7 @@ public abstract class EPUBMetaData {
 		tidy.setOnlyErrors(false);
 		tidy.setQuiet(true);
 		tidy.setMakeClean(true);
-		tidy.setWord2000(true);
+		//tidy.setWord2000(true);
 		PrintWriter nullPW=new PrintWriter(new ByteArrayOutputStream());
 		tidy.setErrout(nullPW);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

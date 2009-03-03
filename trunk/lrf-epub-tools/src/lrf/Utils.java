@@ -17,6 +17,7 @@ public class Utils {
 	}
 
 	public static String toXMLText(String app) {
+		app=app.replace("&", "&amp;");
 		app=app.replace('\u000C', ' ');
 		app=app.replace("’", "&apos;");
 		app=app.replace("'", "&apos;");
@@ -24,12 +25,15 @@ public class Utils {
 		app=app.replace("\"", "&quot;");
 		app=app.replace("“", "&ldquo;");
 		app=app.replace("”", "&rdquo;");
-		app=app.replace(" & ", " &amp; ");
 		app=app.replace("<", "&lt;");
 		app=app.replace(">", "&gt;");
 		app=app.replace("’", "&apos;");
 		app=app.replace("—", "-");
 		app=app.replace("…", "...");
+		app=app.replace("¿", "&iquest;");
+		app=app.replace("¡", "&iexcl;");
+		app=app.replace("«", "&laquo;");
+		app=app.replace("»", "&raquo;");
 		app=app.replace("’", "&apos;");
 		app=app.replace("Æ", "AE");
 		app=app.replace("á", "&aacute;");
