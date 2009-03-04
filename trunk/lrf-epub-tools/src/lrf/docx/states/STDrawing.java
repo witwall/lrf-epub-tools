@@ -1,5 +1,6 @@
 package lrf.docx.states;
 
+import java.io.File;
 import java.util.Vector;
 
 import lrf.docx.Context;
@@ -45,7 +46,8 @@ public class STDrawing implements State {
 			
 			if(imgId!=null){
 				Relation rel=rels.getRelation(imgId);
-				String tgt=context.getFNOut()+"-"+rel.target;
+				File ff=new File(context.getFNOut());
+				String tgt=ff.getName()+"-"+rel.target;
 				tgt=tgt.replace("/", "-");
 				tgt=tgt.replace("\\", "-");
 				String toadd=

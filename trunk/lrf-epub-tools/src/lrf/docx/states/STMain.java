@@ -29,7 +29,7 @@ public class STMain implements State {
 				+ "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + "<head>"
 				+ "<meta http-equiv=\"Content-Type\" content=\"text/html;\" />"
 				+ "<title></title>" + "</head>" + "<body>";
-		context.writeStream(str);
+		context.addData(str);
 	}
 
 	public void startEle(Context context, SHRelations rels, String uri,
@@ -55,10 +55,7 @@ public class STMain implements State {
 					/ FONTSZ;
 			context.addData("<font size=\"" + fontsize + "\">");
 		} else if(lName.equals("lastRenderedPageBreak")){
-			if(!BaseRenderer.noPageBreakEmit)
-				context.addData("<div style=\"page-break-before:always\"/>","<div");
-			else
-				context.addData("<p/>");
+			context.addPageBreak();
 		} else if(lName.equals("instrText")){
 			context.avoidCharsEmits=true;
 		}
@@ -96,8 +93,7 @@ public class STMain implements State {
 
 	public void endDoc(Context context) {
 		context.addData("</body></html>");
-		context.writeArrayList();
-		context.closeStream();
+		context.addPageBreak();
 	}
 
 	public void initList() {
