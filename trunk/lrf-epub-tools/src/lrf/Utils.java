@@ -17,12 +17,15 @@ public class Utils {
 	}
 
 	public static String toXMLText(String app) {
-		app=app.replace("&", "&amp;");
 		app=app.replace('\u000C', ' ');
-		app=app.replace("’", "&apos;");
+		app=app.replace("&", "&amp;");
+		app=app.replace("©", "&copy;");
+		app=app.replace("º", "&ordm;");
+		app=app.replace("ª", "&ordf;");
 		app=app.replace("'", "&apos;");
-		app=app.replace("‘", "&apos;");
-		app=app.replace("\"", "&quot;");
+		app=app.replace("‘", "&lsquo;");
+		app=app.replace("’", "&rsquo;");
+		app=app.replace("\"","&quot;");
 		app=app.replace("“", "&ldquo;");
 		app=app.replace("”", "&rdquo;");
 		app=app.replace("<", "&lt;");
@@ -35,7 +38,7 @@ public class Utils {
 		app=app.replace("«", "&laquo;");
 		app=app.replace("»", "&raquo;");
 		app=app.replace("’", "&apos;");
-		app=app.replace("Æ", "AE");
+		app=app.replace("Æ", "&AElig;");
 		app=app.replace("á", "&aacute;");
 		app=app.replace("é", "&eacute;");
 		app=app.replace("í", "&iacute;");
@@ -48,6 +51,15 @@ public class Utils {
 		app=app.replace("Ú", "&Uacute;");
 		app=app.replace("ñ", "&ntilde;");
 		app=app.replace("Ñ", "&Ntilde;");
+		app=app.replace("£", "&pound;");
+		app=app.replace("§", "&sect;");
+		app=app.replace("®", "&reg;");
+		app=app.replace("†", "&dagger;");
+		app=app.replace("€", "&euro;");
+		//app=app.replace("", "&;");
+		//app=app.replace("", "&;");
+		//app=app.replace("", "&;");
+		//app=app.replace("", "&;");
 		return app;
 	}
 
