@@ -338,6 +338,12 @@ public abstract class EPUBMetaData {
 		is.close();
 	}
 	
+	public void processFile(String content, String epubUrl) throws IOException{
+		ByteArrayOutputStream baos=new ByteArrayOutputStream();
+		baos.write(content.getBytes());
+		processFile(baos, epubUrl);
+	}
+	
 	public void processFile(ByteArrayOutputStream bos, String epubUrl) throws FileNotFoundException, IOException{
 		ByteArrayInputStream bis=new ByteArrayInputStream(bos.toByteArray());
 		processFile(bis, epubUrl);

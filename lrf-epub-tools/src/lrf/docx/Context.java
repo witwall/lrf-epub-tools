@@ -1,11 +1,13 @@
 package lrf.docx;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -26,16 +28,15 @@ import lrf.epub.EPUBMetaData;
 
 import org.xml.sax.Attributes;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
-
 //manage state change
 public class Context extends EPUBMetaData{
-	private ArrayList<String> arrayList;// transformed XHTML data
+	private ArrayList<String> emits;// transformed XHTML data
 	private Stack<State> stack;// state info: table, numbering, main, etc
 	private int count;// index of arrayList
 	private State state;// table, numbering, main, etc
 	SHRelations rels=null;
 	SHCore core=null;
+	SHStyles styles=null;
 	File parent=null;
 	String zName;
 	String fnout;
@@ -54,7 +55,7 @@ public class Context extends EPUBMetaData{
 				fnout=filein+".html";
 			}
 			zName=filein;
-			arrayList = new ArrayList<String>();
+			emits = new ArrayList<String>();
 			stack = new Stack<State>();
 			state = STMain.getInstance();// default state
 			stack.push(state);// set default state
@@ -74,6 +75,13 @@ public class Context extends EPUBMetaData{
 			parser=factory.newSAXParser();
 			core=new SHCore();
 			parser.parse(new ByteArrayInputStream(docxml), core);
+			//parse styles
+			docxml=getZipOSNamed("word/styles.xml");
+			if(docxml!=null){
+				parser=factory.newSAXParser();
+				styles=new SHStyles();
+				parser.parse(new ByteArrayInputStream(docxml),styles);
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -136,7 +144,12 @@ public class Context extends EPUBMetaData{
 	}
 
 	public void addData(String str) {
-		arrayList.add(count, str);
+		emits.add(count, str);
+		count++;
+	}
+	
+	public void addDataAt(String str, int i){
+		emits.add(i, str);
 		count++;
 	}
 	
@@ -145,21 +158,14 @@ public class Context extends EPUBMetaData{
 		numpages++;
 		if(!BaseRenderer.noPageBreakEmit)
 			addData("<div style=\"page-break-before:always\"/>","<div");
-		if(numpages>0 && numpages%sizeOfChains==0)
-			splitOutput();
-	}
-	
-	Vector<Integer> pageBreaks=new Vector<Integer>();
-	public void splitOutput(){
-		pageBreaks.add(count);
 	}
 	
 	public void addData(String str, String after){
 		for(int i=count-1;i>=0;i--){
-			if(arrayList.get(i).startsWith(after)){
-				if(arrayList.get(i).equals(str))
+			if(emits.get(i).startsWith(after)){
+				if(emits.get(i).equals(str))
 					return;
-				arrayList.add(i+1, str);
+				emits.add(i+1, str);
 				count++;
 				break;
 			}
@@ -176,18 +182,18 @@ public class Context extends EPUBMetaData{
 	}
 
 	public void rewriteData(int i, String str) {
-		arrayList.remove(i);
-		arrayList.add(i, str);
+		emits.remove(i);
+		emits.add(i, str);
 	}
 
 	public void removeData(int i) {
-		arrayList.remove(i);
+		emits.remove(i);
 		count--;
 	}
 
 	public void initArrayList() {
 		count = 0;
-		arrayList=new ArrayList<String>();
+		emits=new ArrayList<String>();
 	}
 
 	public int getCount() {
@@ -238,25 +244,89 @@ public class Context extends EPUBMetaData{
 		init(ef.getCanonicalPath());
 		parser.parse(new ByteArrayInputStream(docxml), docp);
 		
-		int pi=0,pf=pageBreaks.get(0),pk=0;
-		do{
-			ByteOutputStream bos=new ByteOutputStream();
-			for(int i=pi;i<pf;i++){
-				bos.write(arrayList.get(i).getBytes());
-			}
-			String contenido=htmlToXhtml(bos.newInputStream());
-			ByteArrayInputStream bais=new ByteArrayInputStream(contenido.getBytes("UTF-8"));
-			processFile(bais, "chain-"+pk+".xhtml");
-			pi=pf;
-			pk++;
-			if(pk>=pageBreaks.size())
-				break;
-			pf=pageBreaks.get(pk);
-		}while(true);
+		serialize();
 		
 		close();
 		
 		removeTmpDir(tmpDir);
+	}
+
+	private void serialize() throws IOException, FileNotFoundException {
+		int pk=0;
+		String st=styles.getCSS();
+		ByteArrayOutputStream bos=new ByteArrayOutputStream();
+		serializeHead(bos,st!=null);
+		Stack<String> pila=new Stack<String>();
+		for(int i=0;i<emits.size();i++){
+			String line=emits.get(i);
+			boolean bypass=false;
+			if(line.startsWith("</")){
+				try {
+					pila.pop();
+				}catch(EmptyStackException e1){
+					bypass=true; //Incredible, emitting more closing tags than needed
+				}
+			}else if(line.startsWith("<") &&!line.endsWith("/>")){
+				pila.push(line);
+			}
+			if(!bypass)
+				bos.write(emits.get(i).getBytes());
+			if(bos.size()>150*1024){
+				//Emitir archivo
+				//Cerramos pila en orden inverso
+				for(int j=pila.size()-1;j>=0;j--){
+					String opened=pila.elementAt(j);
+					String closed="</"+opened.substring(1);
+					int pos=closed.indexOf(" ");
+					if(pos>0){
+						closed=closed.substring(0,pos)+">";
+					}
+					bos.write(closed.getBytes());
+				}
+				//Emitimos tail
+				serializeTail(bos);
+				//procesamos en epub
+				processFile(bos, "chain-"+pk+".xhtml");
+				//Siguiente archivo
+				pk++;
+				//Inicializamos 
+				bos.reset();
+				//Nueva cabecera
+				serializeHead(bos,st!=null);
+				//Abrimos pila en el mismo orden
+				for(int j=0;j<pila.size();j++){
+					bos.write(pila.elementAt(j).getBytes());
+				}
+			}
+		}
+		//El ultimo tenemos que cerrarlo
+		//Emitimos tail
+		serializeTail(bos);
+		//procesamos en epub
+		processFile(bos, "chain-"+pk+".xhtml");
+		//Si hay estilos, tambien
+		if(st!=null){
+			processFile(st, "styles.css");
+		}
+		
+	}
+
+	private void serializeTail(ByteArrayOutputStream bos) throws IOException {
+		String str;
+		str="</body></html>";
+		bos.write(str.getBytes());
+	}
+
+	private void serializeHead(ByteArrayOutputStream bos, boolean withStyles) throws IOException {
+		String str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+			+ "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
+			+ "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
+			+ "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + "<head>"
+			+ "<meta http-equiv=\"Content-Type\" content=\"text/html;\" />"
+			+ "<title></title>" +
+			(withStyles?"<link href=\"styles.css\" rel=\"stylesheet\" type=\"text/css\" />":"")+
+			"</head>" + "<body>";
+		bos.write(str.getBytes());
 	}
 	
 	public void removeTmpDir(File tmp){
@@ -297,5 +367,13 @@ public class Context extends EPUBMetaData{
 	@Override
 	public String getTitle() {
 		return core.title;
+	}
+	
+	public SHStyles getStyles(){
+		return styles;
+	}
+	
+	public int getEmitLineCount(){
+		return count;
 	}
 }
