@@ -93,7 +93,7 @@ public class STMain implements State {
 
 	public void endDoc(Context context) {
 		context.addData("</body></html>");
-		context.addPageBreak();
+		context.splitOutput();
 	}
 
 	public void initList() {
