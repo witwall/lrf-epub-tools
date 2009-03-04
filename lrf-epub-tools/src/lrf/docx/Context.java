@@ -1,11 +1,9 @@
 package lrf.docx;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -18,6 +16,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import lrf.RecurseDirs;
 import lrf.Utils;
+import lrf.conv.BaseRenderer;
 import lrf.docx.states.STDrawing;
 import lrf.docx.states.STMain;
 import lrf.docx.states.STNumbering;
@@ -27,9 +26,10 @@ import lrf.epub.EPUBMetaData;
 
 import org.xml.sax.Attributes;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+
 //manage state change
 public class Context extends EPUBMetaData{
-	BufferedOutputStream outStream = null;
 	private ArrayList<String> arrayList;// transformed XHTML data
 	private Stack<State> stack;// state info: table, numbering, main, etc
 	private int count;// index of arrayList
@@ -42,6 +42,7 @@ public class Context extends EPUBMetaData{
 	File tmpDir;
 	String identifier=null;
 	public boolean avoidCharsEmits=false;
+	public static final int sizeOfChains=40;
 	
 	public Context(String filein) {
 		super("en");
@@ -134,43 +135,30 @@ public class Context extends EPUBMetaData{
 		state.endDoc(this);
 	}
 
-	public void writeStream(String str) {
-		try {
-			outStream.write(str.getBytes("UTF-8"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void closeStream() {
-		try {
-			if (outStream != null) {
-				outStream.flush();
-				outStream.close();
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void writeArrayList() {
-		StringBuffer sb=new StringBuffer("");
-		for (int i = 0; i < count; i++) {
-			sb.append(arrayList.get(i));
-		}
-		writeStream(sb.toString());
-		initArrayList();
-	}
-
 	public void addData(String str) {
 		arrayList.add(count, str);
 		count++;
 	}
 	
+	private int numpages=0;
+	public void addPageBreak(){
+		numpages++;
+		if(!BaseRenderer.noPageBreakEmit)
+			addData("<div style=\"page-break-before:always\"/>","<div");
+		if(numpages>0 && numpages%sizeOfChains==0)
+			splitOutput();
+	}
+	
+	Vector<Integer> pageBreaks=new Vector<Integer>();
+	public void splitOutput(){
+		pageBreaks.add(count);
+	}
+	
 	public void addData(String str, String after){
 		for(int i=count-1;i>=0;i--){
 			if(arrayList.get(i).startsWith(after)){
+				if(arrayList.get(i).equals(str))
+					return;
 				arrayList.add(i+1, str);
 				count++;
 				break;
@@ -233,12 +221,11 @@ public class Context extends EPUBMetaData{
 	}
 	
 	public void parse(File ef) throws Exception {
-		File fout=new File(fnout);
+		if(RecurseDirs.noo && ef.exists())
+			return;
 		parent=new File(fnout).getParentFile();
 		tmpDir=new File(parent,"lrfTools-qmTmp");
 		tmpDir.mkdirs();
-		File f=new File(tmpDir,fout.getName()+".xhtml");
-		outStream = new BufferedOutputStream(new FileOutputStream(f));
 
 		// Parse Document XML file with default handler
 		byte docxml[]=getZipOSNamed("word/document.xml");
@@ -248,17 +235,24 @@ public class Context extends EPUBMetaData{
 		parser = factory.newSAXParser();
 		SHDocument docp=new SHDocument(this);
 		
-		File docxFile=new File(zName);
-		String lastDocxPart=docxFile.getName().substring(0,docxFile.getName().length()-5);
-		if(RecurseDirs.noo && ef.exists())
-			return;
 		init(ef.getCanonicalPath());
 		parser.parse(new ByteArrayInputStream(docxml), docp);
-		String contenido=htmlToXhtml(new FileInputStream(f));
 		
-		ByteArrayInputStream bais=new ByteArrayInputStream(contenido.getBytes("UTF-8"));
-		String name=fout.getName();
-		processFile(bais, name.substring(0,name.length()-5)+".xhtml");
+		int pi=0,pf=pageBreaks.get(0),pk=0;
+		do{
+			ByteOutputStream bos=new ByteOutputStream();
+			for(int i=pi;i<pf;i++){
+				bos.write(arrayList.get(i).getBytes());
+			}
+			String contenido=htmlToXhtml(bos.newInputStream());
+			ByteArrayInputStream bais=new ByteArrayInputStream(contenido.getBytes("UTF-8"));
+			processFile(bais, "chain-"+pk+".xhtml");
+			pi=pf;
+			pk++;
+			if(pk>=pageBreaks.size())
+				break;
+			pf=pageBreaks.get(pk);
+		}while(true);
 		
 		close();
 		

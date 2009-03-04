@@ -69,7 +69,6 @@ public class STTable implements State {
 			context.addData("</tr>");
 		} else if (localName.equals("tbl")) {
 			context.addData("</tbody></table>");
-			context.writeArrayList();
 		}
 	}
 
