@@ -62,6 +62,9 @@ public class SHStyles extends DefaultHandler {
 			String sname=sne.nextElement();
 			ret+="."+sname+" {"+estilos.get(sname)+"}\n";
 		}
+		if(defaultStyleName!=null){
+			ret+="DIV {"+estilos.get(defaultStyleName)+"}\n";
+		}
 		return ret;
 	}
 	
