@@ -322,9 +322,9 @@ public class Context extends EPUBMetaData{
 			+ "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
 			+ "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
 			+ "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + "<head>"
-			+ "<meta http-equiv=\"Content-Type\" content=\"text/html;\" />"
+			+ "<meta http-equiv=\"Content-Type\" content=\"text/html;\"/>"
 			+ "<title></title>" +
-			(withStyles?"<link href=\"styles.css\" rel=\"stylesheet\" type=\"text/css\" />":"")+
+			(withStyles?"\n<link href=\"styles.css\" rel=\"stylesheet\" type=\"text/css\"/>":"")+
 			"</head>" + "<body>";
 		bos.write(str.getBytes());
 	}

@@ -24,7 +24,7 @@ public class STMain implements State {
 	public void startDoc(Context context) {
 	}
 
-	public int lastMarkedDIV=0;
+	public int lastMarkedDIV=-1;
 	public void startEle(Context c, SHRelations rels, String uri,
 			String lName, String qName, Attributes at) {
 		if (!uri.equals(SHDocument.WORDPROCESSINGML))
@@ -42,11 +42,20 @@ public class STMain implements State {
 				lastMarkedDIV=c.getEmitLineCount();
 		} else if (lName.equals("color") && element.contains("rPr")) {
 			element.add(lName);
-			c.addData("<span style=\"font-color=\"#" + at.getValue(uri, "val")+ "\">");
+			c.addData("<span style=\"font-color=#" + at.getValue(uri, "val")+ "\">");
 		} else if (lName.equals("sz") && element.contains("rPr")) {
 			element.add(lName);
 			int fontsz = Integer.parseInt(at.getValue(uri, "val")) / FONTSZ;
-			c.addData("<span style=\"font-size:" + fontsz + "\">");
+			c.addData("<span style=\"font-size:" + fontsz + "px\">");
+		} else if (lName.equals("b") && element.contains("rPr")) {
+			element.add(lName);
+			c.addData("<span style=\"font-weight:bold\">");
+		} else if (lName.equals("i") && element.contains("rPr")) {
+			element.add(lName);
+			c.addData("<span style=\"font-style:italic\">");
+		} else if (lName.equals("condense") && element.contains("rPr")) {
+			element.add(lName);
+			c.addData("<span style=\"font-stretch:condensed\">");
 		} else if(lName.equals("lastRenderedPageBreak")){
 			c.addPageBreak();
 		} else if(lName.equals("instrText")){
@@ -54,15 +63,16 @@ public class STMain implements State {
 		} else if(lName.equals("pStyle")){
 			c.addData("<div class=\""+at.getValue(uri,"val")+"\">");
 			element.add(lName);
-		} else if(lName.equals("t")){
-			if(!element.contains("pStyle") && c.getStyles().getDefaultStyleName()!=null){
-				c.addDataAt("<div class=\""+c.getStyles().getDefaultStyleName()+"\">",lastMarkedDIV);
-				element.add("pStyle");
-			}
-				
-		}
+		} 
 	}
 
+	private void checkFontProp(Context context, String fp){
+		if (element.contains("rPr") && element.contains(fp)) {
+			context.addData("</span>");
+			element.remove(fp);
+		}
+	}
+	
 	public void endEle(Context context, String uri, String lName,String qName) {
 		if (!uri.equals(SHDocument.WORDPROCESSINGML))
 			return;
@@ -73,20 +83,21 @@ public class STMain implements State {
 				STNumbering.getInstance().setnumPr(null);
 			}
 		} else if (lName.equals("r")) {
-			if (element.contains("rPr") && element.contains("color")) {
-				context.addData("</span>");
-			}
-			if (element.contains("rPr") && element.contains("sz")) {
-				context.addData("</span>");
-			}
+			checkFontProp(context, "color");
+			checkFontProp(context, "sz");
+			checkFontProp(context, "i");
+			checkFontProp(context, "b");
+			checkFontProp(context, "condense");
 		} else if (lName.equals("p")) {
-			if(element.contains("pStyle")){
-				context.addData("</div>\n");
-				element.remove("pStyle");
-			}
-			if (element.contains("jc")) {
-				context.addData("</div>\n");
-				element.remove("jc");
+			if(element.contains("jc")||element.contains("pStyle")){
+				if(element.contains("jc")){
+					context.addData("</div>");
+					element.remove("jc");
+				}
+				if(element.contains("pStyle")){
+					context.addData("</div>");
+					element.remove("pStyle");
+				}
 			} else {
 				context.addData("<br/>");
 			}
