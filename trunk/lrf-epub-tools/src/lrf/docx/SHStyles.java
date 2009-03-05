@@ -13,6 +13,9 @@ public class SHStyles extends DefaultHandler {
 	String defaultStyleName=null;
 	String justify=null;
 	int fontSize=0;
+	boolean bold=false;
+	boolean italic=false;
+	String color=null;
 	Hashtable<String,String> estilos=new Hashtable<String, String>();
 	@Override
 	public void startElement(String uri, String localName, String name, Attributes at) 
@@ -20,9 +23,9 @@ public class SHStyles extends DefaultHandler {
 		super.startElement(uri, localName, name, at);
 		if(localName.equals("style")){
 			String type=at.getValue("w:type");
-			if(type!=null && type.equals("paragraph")){
+			if(type!=null && (type.equals("paragraph") || type.equals("character"))){
 				allow=true;
-				currentStyleName=at.getValue("w:styleId");
+				currentStyleName=type+at.getValue("w:styleId");
 				String dv=at.getValue(uri, "default");
 				if(dv!=null && dv.equals("1")){
 					defaultStyleName=currentStyleName;
@@ -33,6 +36,16 @@ public class SHStyles extends DefaultHandler {
 				justify=at.getValue("w:val");
 			}else if(localName.equals("sz")){
 				fontSize=Integer.parseInt(at.getValue("w:val"));
+			}else if(localName.equals("b")){
+				String boldness=at.getValue(uri,"val");
+				if(boldness==null)
+					bold=true;
+				else if(Integer.parseInt(boldness)>0)
+					bold=true;
+			}else if(localName.equals("i")){
+				italic=true;
+			}else if(localName.equals("color")){
+				color=at.getValue(uri,"val");
 			}
 		}
 	}
@@ -46,11 +59,17 @@ public class SHStyles extends DefaultHandler {
 			estilos.put(
 					currentStyleName,
 					 (justify==null?"":" text-align:"+justify+";")
-					+(fontSize==0?  "":" font-size:"+(fontSize)+";")
+					+(fontSize==0?  "":" font-size:"+(getFontSize(fontSize))+";")
+					+(!bold?        "":" font-weight:bold;")
+					+(!italic?      "":" font-style:italic;")
+					+(color==null?  "":" font-color=#"+color+";")
 					);
 			justify=null;
 			fontSize=0;
 			currentStyleName=null;
+			bold=false;
+			italic=false;
+			color=null;
 		}
 	}
 
@@ -70,5 +89,12 @@ public class SHStyles extends DefaultHandler {
 	
 	public String getDefaultStyleName(){
 		return defaultStyleName;
+	}
+	
+	public static String getFontSize(int px){
+		float fs=(float)px/24f;
+		fs=Math.round(fs*100);
+		fs/=100;
+		return ""+fs+"em";
 	}
 }

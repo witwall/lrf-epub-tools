@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import lrf.docx.Context;
 import lrf.docx.SHDocument;
 import lrf.docx.SHRelations;
+import lrf.docx.SHStyles;
 
 import org.xml.sax.Attributes;
 
@@ -46,7 +47,7 @@ public class STMain implements State {
 		} else if (lName.equals("sz") && element.contains("rPr")) {
 			element.add(lName);
 			int fontsz = Integer.parseInt(at.getValue(uri, "val")) / FONTSZ;
-			c.addData("<span style=\"font-size:" + fontsz + "px\">");
+			c.addData("<span style=\"font-size:" + SHStyles.getFontSize(fontsz) + "\">");
 		} else if (lName.equals("b") && element.contains("rPr")) {
 			element.add(lName);
 			c.addData("<span style=\"font-weight:bold\">");
@@ -56,12 +57,15 @@ public class STMain implements State {
 		} else if (lName.equals("condense") && element.contains("rPr")) {
 			element.add(lName);
 			c.addData("<span style=\"font-stretch:condensed\">");
+		} else if (lName.equals("rStyle") && element.contains("rPr")) {
+			element.add(lName);
+			c.addData("<span class=\"character"+at.getValue(uri, "val")+"\">");
 		} else if(lName.equals("lastRenderedPageBreak")){
 			c.addPageBreak();
 		} else if(lName.equals("instrText")){
 			c.avoidCharsEmits=true;
 		} else if(lName.equals("pStyle")){
-			c.addData("<div class=\""+at.getValue(uri,"val")+"\">");
+			c.addData("<div class=\"paragraph"+at.getValue(uri,"val")+"\">");
 			element.add(lName);
 		} 
 	}
@@ -88,6 +92,7 @@ public class STMain implements State {
 			checkFontProp(context, "i");
 			checkFontProp(context, "b");
 			checkFontProp(context, "condense");
+			checkFontProp(context, "rStyle");
 		} else if (lName.equals("p")) {
 			if(element.contains("jc")||element.contains("pStyle")){
 				if(element.contains("jc")){
