@@ -16,7 +16,9 @@ public class SHStyles extends DefaultHandler {
 	boolean bold=false;
 	boolean italic=false;
 	String color=null;
+	String heading=null;
 	Hashtable<String,String> estilos=new Hashtable<String, String>();
+	Hashtable<String,String> estilosHeadings=new Hashtable<String, String>(); 
 	@Override
 	public void startElement(String uri, String localName, String name, Attributes at) 
 	throws SAXException {
@@ -32,7 +34,9 @@ public class SHStyles extends DefaultHandler {
 				}
 			}
 		}else if(allow){
-			if(localName.equals("jc")){
+			if(localName.equals("name")){
+				heading=at.getValue(uri, "val");
+			}else if(localName.equals("jc")){
 				justify=at.getValue("w:val");
 			}else if(localName.equals("sz")){
 				fontSize=Integer.parseInt(at.getValue("w:val"));
@@ -64,12 +68,14 @@ public class SHStyles extends DefaultHandler {
 					+(!italic?      "":" font-style:italic;")
 					+(color==null?  "":" font-color=#"+color+";")
 					);
+			estilosHeadings.put(currentStyleName,heading);
 			justify=null;
 			fontSize=0;
 			currentStyleName=null;
 			bold=false;
 			italic=false;
 			color=null;
+			heading=null;
 		}
 	}
 
@@ -96,5 +102,9 @@ public class SHStyles extends DefaultHandler {
 		fs=Math.round(fs*100);
 		fs/=100;
 		return ""+fs+"em";
+	}
+	
+	public String getHeading(String name){
+		return estilosHeadings.get(name);
 	}
 }

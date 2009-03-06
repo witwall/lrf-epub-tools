@@ -25,6 +25,7 @@ import lrf.docx.states.STNumbering;
 import lrf.docx.states.STTable;
 import lrf.docx.states.State;
 import lrf.epub.EPUBMetaData;
+import lrf.epub.XMLNode;
 
 import org.xml.sax.Attributes;
 
@@ -251,12 +252,17 @@ public class Context extends EPUBMetaData{
 		removeTmpDir(tmpDir);
 	}
 
+	public static final String command="$command@ ";
 	private void serialize() throws IOException, FileNotFoundException {
 		int pk=0;
 		String st=styles.getCSS();
 		ByteArrayOutputStream bos=new ByteArrayOutputStream();
 		serializeHead(bos,st!=null);
 		Stack<String> pila=new Stack<String>();
+		String currentCommand=null;
+		int autoRef=0;
+		Vector<XMLNode> tablaDeContenidos=new Vector<XMLNode>();
+		tablaDeContenidos.add(getNavMap()); //Nivel 0 de la tabla
 		for(int i=0;i<emits.size();i++){
 			String line=emits.get(i);
 			boolean bypass=false;
@@ -268,9 +274,26 @@ public class Context extends EPUBMetaData{
 				}
 			}else if(line.startsWith("<") &&!line.endsWith("/>")){
 				pila.push(line);
+				if(line.startsWith("<div class=")){
+					++autoRef;
+					line=line.replace("<div class","<div id=\"autoRef"+autoRef+"\" class");
+				}
+			}else if(line.startsWith(command)){
+				currentCommand=line.substring(command.length());
+				bypass=true;
+			}else if(!line.startsWith("<") && currentCommand!=null){
+				if(currentCommand.startsWith("np")){
+					createNavPoint(line, "chain-"+(pk)+".xhtml#autoRef"+(autoRef), getNavMap());
+				}else if(currentCommand.startsWith("hl ")){
+					line="<a href=\"#"+currentCommand.substring(3)+"\">"+line+"</a>";
+				}else if(currentCommand.startsWith("bms ")){
+					line="<a name=\""+currentCommand.substring(4)+"\">"+line+"</a>";
+				}else if(currentCommand.startsWith("bme ")){
+				}
+				currentCommand=null;
 			}
 			if(!bypass)
-				bos.write(emits.get(i).getBytes());
+				bos.write(line.getBytes());
 			if(bos.size()>150*1024){
 				//Emitir archivo
 				//Cerramos pila en orden inverso
