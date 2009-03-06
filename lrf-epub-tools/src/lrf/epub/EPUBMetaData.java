@@ -242,7 +242,7 @@ public abstract class EPUBMetaData {
 	 * 		Nombre del navPoint padre. rootNavMap es el nodo raiz.
 	 * @return Nuevo nodo creado.
 	 */
-	protected XMLNode createNavPoint(String name, String url, XMLNode padre) {
+	public XMLNode createNavPoint(String name, String url, XMLNode padre) {
 		XMLNode ret = new XMLNode("navPoint", null, padre,false);
 		ret.addAtr("id", "navp-" + tocItemCounter);
 		ret.addAtr("playOrder", "" + tocItemCounter);

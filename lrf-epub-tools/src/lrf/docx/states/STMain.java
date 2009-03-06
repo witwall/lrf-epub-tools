@@ -6,6 +6,7 @@ import lrf.docx.Context;
 import lrf.docx.SHDocument;
 import lrf.docx.SHRelations;
 import lrf.docx.SHStyles;
+import lrf.epub.XMLNode;
 
 import org.xml.sax.Attributes;
 
@@ -65,9 +66,18 @@ public class STMain implements State {
 		} else if(lName.equals("instrText")){
 			c.avoidCharsEmits=true;
 		} else if(lName.equals("pStyle")){
-			c.addData("<div class=\"paragraph"+at.getValue(uri,"val")+"\">");
+			String styleId=at.getValue(uri,"val");
+			c.addData("<div class=\"paragraph"+styleId+"\">");
+			if(!c.getStyles().getHeading("paragraph"+styleId).toLowerCase().startsWith("toc"))
+				c.addData(Context.command+"np");
 			element.add(lName);
-		} 
+		} else if(lName.equals("hyperlink")){
+			c.addData(Context.command+"hl "+at.getValue(uri,"anchor"));
+		} else if(lName.equals("bookmarkStart")){
+			c.addData(Context.command+"bms "+at.getValue(uri,"name"));
+		} else if(lName.equals("bookmarkEnd")){
+			c.addData(Context.command+"bme ");
+		}
 	}
 
 	private void checkFontProp(Context context, String fp){
