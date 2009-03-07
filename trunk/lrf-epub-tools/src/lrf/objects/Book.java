@@ -191,8 +191,10 @@ public class Book extends EPUBMetaData implements Serializable {
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
 		HtmlWriter pw = HtmlWriter.getInstance(doc, baos);
 		pw.setCloseStream(false);
-		doc.addAuthor(getAuth());
-		doc.addTitle(getTitle());
+		String au=getAuth();
+		doc.addAuthor(au==null?"No Author":au);
+		au=getTitle();
+		doc.addTitle(au==null?"No title":au);
 		if(getBookID()!=null)
 			doc.addHeader("BookID", getBookID());
 		doc.open();
