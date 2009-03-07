@@ -27,7 +27,6 @@ import lrf.docx.states.STNumbering;
 import lrf.docx.states.STTable;
 import lrf.docx.states.State;
 import lrf.epub.EPUBMetaData;
-import lrf.epub.XMLNode;
 
 import org.xml.sax.Attributes;
 
