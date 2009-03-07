@@ -8,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -261,8 +263,8 @@ public class Context extends EPUBMetaData{
 		Stack<String> pila=new Stack<String>();
 		String currentCommand=null;
 		int autoRef=0;
-		Vector<XMLNode> tablaDeContenidos=new Vector<XMLNode>();
-		tablaDeContenidos.add(getNavMap()); //Nivel 0 de la tabla
+		Hashtable<String,Integer> refs=new Hashtable<String,Integer>();
+		Vector<ByteArrayOutputStream> chains=new Vector<ByteArrayOutputStream>();
 		for(int i=0;i<emits.size();i++){
 			String line=emits.get(i);
 			boolean bypass=false;
@@ -288,6 +290,7 @@ public class Context extends EPUBMetaData{
 					line="<a href=\"#"+currentCommand.substring(3)+"\">"+line+"</a>";
 				}else if(currentCommand.startsWith("bms ")){
 					line="<a name=\""+currentCommand.substring(4)+"\">"+line+"</a>";
+					refs.put(currentCommand.substring(4), pk);
 				}else if(currentCommand.startsWith("bme ")){
 				}
 				currentCommand=null;
@@ -309,11 +312,12 @@ public class Context extends EPUBMetaData{
 				//Emitimos tail
 				serializeTail(bos);
 				//procesamos en epub
-				processFile(bos, "chain-"+pk+".xhtml");
+				chains.add(bos);
+				//processFile(bos, "chain-"+pk+".xhtml");
 				//Siguiente archivo
 				pk++;
 				//Inicializamos 
-				bos.reset();
+				bos=new ByteArrayOutputStream();
 				//Nueva cabecera
 				serializeHead(bos,st!=null);
 				//Abrimos pila en el mismo orden
@@ -326,7 +330,18 @@ public class Context extends EPUBMetaData{
 		//Emitimos tail
 		serializeTail(bos);
 		//procesamos en epub
-		processFile(bos, "chain-"+pk+".xhtml");
+		//processFile(bos, "chain-"+pk+".xhtml");
+		chains.add(bos);
+		//Ahora sustituimos las referencias por la reales de refs
+		for(int i=0;i<chains.size();i++){
+			String chain=chains.get(i).toString();
+			for(Enumeration<String> names=refs.keys();names.hasMoreElements();){
+				String name=names.nextElement();
+				int chainNumber=refs.get(name);
+				chain=chain.replace("#"+name, "chain-"+chainNumber+".xhtml#"+name);
+			}
+			processFile(chain, "chain-"+i+".xhtml");
+		}
 		//Si hay estilos, tambien
 		if(st!=null){
 			processFile(st, "styles.css");
