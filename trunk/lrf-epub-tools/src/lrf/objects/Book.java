@@ -295,8 +295,8 @@ public class Book extends EPUBMetaData implements Serializable {
 		Document doc = new Document();
 		DocWriter pw = RtfWriter2.getInstance(doc, os);
 		pw.setCloseStream(false);
-		doc.addAuthor(getAuth());
-		doc.addTitle(getTitle());
+		doc.addAuthor(getAuth()==null?"No Author":getAuth());
+		doc.addTitle(getTitle()==null?"No Title":getTitle());
 		if(getBookID()!=null)
 			doc.addHeader("BookID", getBookID());
 		doc.setPageSize(new Rectangle(600*RendererIText.xconv, 800*RendererIText.yconv));
