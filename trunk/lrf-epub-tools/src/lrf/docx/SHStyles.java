@@ -62,7 +62,7 @@ public class SHStyles extends DefaultHandler {
 			allow=false;
 			estilos.put(
 					currentStyleName,
-					 (justify==null?"":" text-align:"+justify+";")
+					 (justify==null?" text-align:justify;":" text-align:"+justify+";")
 					+(fontSize==0?  "":" font-size:"+(getFontSize(fontSize))+";")
 					+(!bold?        "":" font-weight:bold;")
 					+(!italic?      "":" font-style:italic;")

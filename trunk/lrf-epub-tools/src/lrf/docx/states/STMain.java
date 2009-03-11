@@ -90,13 +90,7 @@ public class STMain implements State {
 	public void endEle(Context context, String uri, String lName,String qName) {
 		if (!uri.equals(SHDocument.WORDPROCESSINGML))
 			return;
-		if (lName.equals("pPr")) {
-			String tmp = STNumbering.getInstance().getnumPr();
-			if (tmp != null) {
-				context.addData(tmp + " ");
-				STNumbering.getInstance().setnumPr(null);
-			}
-		} else if (lName.equals("r")) {
+		if (lName.equals("r")) {
 			checkFontProp(context, "color");
 			checkFontProp(context, "sz");
 			checkFontProp(context, "i");
