@@ -23,7 +23,6 @@ import lrf.Utils;
 import lrf.conv.BaseRenderer;
 import lrf.docx.states.STDrawing;
 import lrf.docx.states.STMain;
-import lrf.docx.states.STNumbering;
 import lrf.docx.states.STTable;
 import lrf.docx.states.State;
 import lrf.epub.EPUBMetaData;
@@ -209,9 +208,6 @@ public class Context extends EPUBMetaData{
 		} else if (str.equals("tbl")) {
 			state = STTable.getInstance();
 			stack.push(state);
-		} else if (str.equals("numPr")) {
-			state = STNumbering.getInstance();
-			stack.push(state);
 		} else if(str.equals("drawing")) {
 			state = STDrawing.getInstance();
 			stack.push(state);
@@ -221,7 +217,6 @@ public class Context extends EPUBMetaData{
 	public void setEndState(String str) {
 		if (str.equals("p") || 
 				str.equals("tbl") || 
-				str.equals("numPr") || 
 				str.equals("drawing")) {
 			stack.pop();
 			state = stack.peek();// set stack top state to current state
