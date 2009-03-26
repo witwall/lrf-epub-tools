@@ -28,8 +28,9 @@ public class STDrawing implements State {
 
 	@Override
 	public void endEle(Context context, String uri, String lName, String name) {
-		// TODO Auto-generated method stub
-
+		if(lName.equals("posOffset")){
+			context.avoidCharsEmits=false;
+		}
 	}
 
 	@Override
@@ -60,6 +61,8 @@ public class STDrawing implements State {
 					imgs.add(tgt);
 				}
 			}
+		}else if(lName.equals("posOffset")){
+			context.avoidCharsEmits=true;
 		}
 	}
 }

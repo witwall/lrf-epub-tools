@@ -32,7 +32,10 @@ public class STMain implements State {
 		if (!uri.equals(SHDocument.WORDPROCESSINGML))
 			return;
 		if (lName.equals("jc") && !at.getValue(uri, "val").equals("left")) {
-			c.addData("<div style=\"text-align:"+ at.getValue(uri, "val") + ";\">");
+			String justif=at.getValue(uri, "val");
+			if(justif.equals("both"))
+				justif="justify";
+			c.addData("<div style=\"text-align:"+ justif + ";\">");
 			element.add(lName);
 		} else if (lName.equals("r")) {
 			element.add(lName);

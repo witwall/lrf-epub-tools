@@ -227,7 +227,7 @@ public class GraphicsHook extends Graphics2D {
 			po(s+" bgColor=\""+bgColor.intValue()+"\"",1);
 		else
 			po(s,1);
-		byte bs[]=toFormat(img, "png");
+		byte bs[]=toFormat(img, "jpeg");
 		if(pw!=null) pw.println(Base64.encodeBytes(bs));
 		pc("Image",2);
 		flw.addPiece(new ImagePiece(pageNumber,(float)x,(float)y,img,xt));

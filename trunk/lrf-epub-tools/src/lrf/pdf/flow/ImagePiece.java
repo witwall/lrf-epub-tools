@@ -18,21 +18,29 @@ public class ImagePiece extends Piece {
 	
 	
 	public ImagePiece(int np,float x, float y, Image img, AffineTransform at){
+		int imgHe=img.getHeight(null);
+		int imgWi=img.getWidth(null);
+		float sx=1,sy=1;
+		if(imgHe>800)
+			sy=800f/imgHe;
+		if(imgWi>600)
+			sx=600f/imgWi;
+		float mins=Math.min(sx,sy);
+		at=new AffineTransform(mins,0,0,mins,0,0);
 		init(
-			np,
-			0,
-			0,
-			new Rectangle2D.Float(
-				(float)(at==null? x :at.getScaleX()*x+at.getShearX()*y+at.getTranslateX()),
-				(float)(at==null? y :at.getShearY()*x+at.getScaleY()*y+at.getTranslateY()),
-				(float)(at==null? img.getWidth(null) :at.getScaleX()*img.getWidth(null)),
-				(float)(at==null? img.getHeight(null):at.getScaleY()*img.getHeight(null))
-			)
-		);
+				np,
+				0,
+				0,
+				new Rectangle2D.Float(
+					(float)(at==null? x :at.getScaleX()*x+at.getShearX()*y+at.getTranslateX()),
+					(float)(at==null? y :at.getShearY()*x+at.getScaleY()*y+at.getTranslateY()),
+					(float)(at==null? img.getWidth(null) :at.getScaleX()*img.getWidth(null)),
+					(float)(at==null? img.getHeight(null):at.getScaleY()*img.getHeight(null))
+				)
+			);
+			
 		BufferedImage bim=(BufferedImage)img;
-		AffineTransformOp atop=new AffineTransformOp(
-				at
-				,null);
+		AffineTransformOp atop=new AffineTransformOp(at,null);
 		im=atop.filter(bim, null);
 		double xx=at.getTranslateX();
 		double yy=at.getTranslateY();
@@ -56,8 +64,8 @@ public class ImagePiece extends Piece {
 	public void emitHTML(HtmlDoc doc) {
 		try {
 			ByteArrayOutputStream baos=new ByteArrayOutputStream();
-			ImageIO.write(im, "PNG", baos);
-			doc.addImage(imNum++, im.getWidth(null), im.getHeight(null), ".png", baos.toByteArray());
+			ImageIO.write(im, "jpeg", baos);
+			doc.addImage(imNum++, im.getWidth(null), im.getHeight(null), ".jpg", baos.toByteArray());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
