@@ -84,7 +84,10 @@ public class TagStream extends Tag {
 		if ((streamFlags & 0x200) == 0x200) {
 			int size = streamSize;
 			int key = (size % xorKey) + 0x0F;
-			if (size > 0x400 && !((streamFlags & 0x100) == 0x100)) {
+			int tt=padre.getType();
+			if (size > 0x400 && (tt==BBObj.ot_ImageStream || 
+					             tt==BBObj.ot_Font ||
+					             tt==BBObj.ot_Sound)) {
 				size = 0x400;
 			}
 			byte unscrambled[] = new byte[streamSize];
@@ -108,25 +111,56 @@ public class TagStream extends Tag {
 			}
 		}
 		if (((streamFlags & 0x100) == 0x100)) {
-			// Decompress the bytes
+			// Decompress the bytescd tgmp
 			try {
-				int decompSize = pb.getInt(true);
+				int decompSize = pb.getInt(false);
 				Inflater decompresser = new Inflater();
-				decompresser.setInput(pb.getSubBuf(0, streamSize - 4));
-				byte[] result = new byte[decompSize];
+				decompresser.setInput(pb.getSubBuf(4, streamSize - 4));
+				byte[] result = new byte[decompSize>0x800000 ? 0x800000 : decompSize];
 				decompresser.inflate(result);
 				decompresser.end();
 				Reader br = new ByteReader(result, 0);
 				ts = new TagStream(tagID, padre, br);
 			} catch (Exception e) {
-				System.err.println("Error inflating data");
-				e.printStackTrace();
+				System.out.print("Error inflating data id="+padre.getID()+",size="+streamSize);
+				System.out.print(":Brute force descrambling...");
+				byte scrambled[] = new byte[streamSize];
+				main.copy(0, scrambled, 0, streamSize);
+				byte unscrambled[] = new byte[streamSize];
+				for(int kk=0;kk<256;kk++){
+					for (int i = 0; i < streamSize; i++) {
+						unscrambled[i] = (byte) (scrambled[i] ^ kk & 0x00ff);
+					}
+					pb=new ByteReader(unscrambled,0);
+					try {
+						int decompSize = pb.getInt(false);
+						Inflater decompresser = new Inflater();
+						decompresser.setInput(pb.getSubBuf(4, streamSize - 4));
+						byte[] result = new byte[decompSize>0x800000 ? 0x800000 : decompSize];
+						decompresser.inflate(result);
+						System.out.println("KEY FOUND!");
+						decompresser.end();
+						Reader br = new ByteReader(result, 0);
+						ts = new TagStream(tagID, padre, br);
+						main.skip(streamSize);
+						if(ts!=null)
+							ts.setImageType(imageType);
+						return ts;
+					}catch(Exception ee){
+						
+					}
+				}
+				main.skip(streamSize);
+				System.out.println("Sorry, Key not found.");
+				return new UnknowContent(tagID,padre,(ByteReader)pb);
+				//e.printStackTrace();
 			}
 		} else {
 			ts = new TagStream(tagID, padre, pb.getSubReader(0, streamSize));
 		}
 		main.skip(streamSize);
-		ts.setImageType(imageType);
+		if(ts!=null)
+			ts.setImageType(imageType);
 		return ts;
 	}
 
