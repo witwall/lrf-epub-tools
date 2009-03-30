@@ -32,6 +32,30 @@ public class OBImage extends BBObj {
 				tagStreamID=isObject.id;
 				TagStream isTag = (TagStream) isObject.getTagAt(0);
 				b = isTag.getBytes();
+				img=null;
+				if(img==null)
+					try {
+						img=new Jpeg(b);
+						extension = ".jpg";
+					}catch(Exception e1){}
+				if(img==null)
+					try {
+						GifImage gif=new GifImage(b);
+						img=gif.getImage(1);
+						extension = ".gif";
+					}catch(Exception e1){}
+				if(img==null)
+					try {
+						img = BmpImage.getImage(b);
+						extension = ".bmp";
+					}catch(Exception e1){}
+				if(img==null)
+					try {
+						img = PngImage.getImage(b);
+						extension = ".png";
+					}catch(Exception e1){}
+				
+				/*
 				if (isTag.imageType.equals(".jpg")) {
 					img = new Jpeg(b);
 					extension = ".jpg";
@@ -46,6 +70,7 @@ public class OBImage extends BBObj {
 					img = PngImage.getImage(b);
 					extension = ".png";
 				}
+				*/
 			} else if (tag.getName().equals("*ImageRect")) {
 				wi = tag.getValueAt(2);
 				he = tag.getValueAt(3);
