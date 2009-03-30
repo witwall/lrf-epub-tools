@@ -13,6 +13,7 @@ import lrf.objects.tags.Tag;
 import lrf.parse.ParseException;
 
 public class BBObj implements LRFSerial,Renderable  { 
+	public static final boolean debug=false;
 	Book padre = null;
 	int id;
 	int objType;
@@ -53,6 +54,9 @@ public class BBObj implements LRFSerial,Renderable  {
 	public static final int ot_SimpleText = 29;
 	public static final int ot_TOC = 30;
 	
+	public static void msg(String s){
+		System.out.print(s);
+	}
 	
 	public static String getObjectTypeName(int objectType) {
 		String s;
@@ -164,6 +168,12 @@ public class BBObj implements LRFSerial,Renderable  {
 		padre = book;
 		id = id2;
 		objType = tipo;
+		if(debug){
+			try {
+				msg(getObjectTypeName(tipo)+":"+id2+"\n");
+			}catch(Exception e){
+			}
+		}
 		loadTags(pb);
 	}
 
@@ -174,6 +184,12 @@ public class BBObj implements LRFSerial,Renderable  {
 			Tag t;
 			try {
 				t = Tag.loadTag(this,pb, xk);
+				if(debug && t!=null){
+					try {
+						msg(" "+t.toString());
+					}catch(Exception e){
+					}
+				}
 			} catch (UnsupportedEncodingException e) {
 				continue;
 			}
