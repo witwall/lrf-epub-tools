@@ -95,13 +95,17 @@ public class HtmlDoc implements EPUBEntity{
 		}
 	}
 	
+	private boolean firstBody=true;
 	private void changeStyle(HtmlStyle estilo) {
 		HtmlStyle diff=currentStyle.newStyles(estilo, StyleItem.st_body);
 		if(diff.getNumProps()>0){
 			//Generar Body
 			closeDiv();
 			currentStyle.overrideWith(diff);
+			if(firstBody)
+				emits.add("</body>");
 			emits.add(Emitter.body(currentStyle));
+			firstBody=false;
 		}
 		diff=currentStyle.newStyles(estilo, StyleItem.st_div);
 		if(diff.getNumProps()>0){
@@ -180,6 +184,42 @@ public class HtmlDoc implements EPUBEntity{
 		String spanAnterior="",spanActual="";
 		boolean spanAnteriorEOP=false;
 		int spanAnteriorNdx=-1;
+		//Eliminamos los div/div y span/span vacios
+		{
+			int pdo=-1;
+			int pdc=-1;
+			int pso=-1;
+			int psc=-1;
+			boolean hasContent=false;
+			for(int i=0;i<sz;i++){
+				String em=emits.get(i);
+				if(em.startsWith("<div")){
+					pdo=i;
+					hasContent=false;
+					continue;
+				}else if(em.startsWith("<span")){
+					pso=i;
+					hasContent=false;
+					continue;
+				}else if(em.startsWith("</div")){
+					if(!hasContent){
+						for(int j=pdo;j<=i;j++)
+							emits.set(j, "");
+					}
+				}else if(em.startsWith("</span")){
+					if(!hasContent){
+						for(int j=pso;j<=i;j++)
+							emits.set(j,"");
+					}
+				}else {
+					hasContent=true;
+					if(!em.startsWith("<")){
+						emits.set(i, em.replace(" ","çç"));
+					}
+				}
+				
+			}
+		}
 		for(int i=0;i<sz;i++){
 			String base=emits.elementAt(i);
 			boolean isText=!base.startsWith("<");
