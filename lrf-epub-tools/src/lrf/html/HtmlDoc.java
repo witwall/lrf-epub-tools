@@ -213,9 +213,6 @@ public class HtmlDoc implements EPUBEntity{
 					}
 				}else {
 					hasContent=true;
-					if(!em.startsWith("<")){
-						emits.set(i, em.replace(" ","çç"));
-					}
 				}
 				
 			}

@@ -493,7 +493,7 @@ public class Tag implements Renderable, LRFSerial {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		toXML(sb);
+		toXML(sb,0);
 		return sb.toString();
 	}
 
@@ -514,93 +514,92 @@ public class Tag implements Renderable, LRFSerial {
 		return ret;
 	}
 
-	public void toXML(StringBuffer sb) {
+	public void toXML(StringBuffer sb, int level) {
 		String tName = tagNames[id];
 		if (tName.equals("*ChildPageTree")) {
-			monoLinkRef(sb, tName);
+			monoLinkRef(sb, tName, level+1);
 		} else if (tName.equals("*PageList")) {
-			pad(sb, " <Tag Type=\"" + tName + "\">", false);
-			multipleLinkRefs(sb);
-			pad(sb, " </Tag>", false);
+			//pad(sb, "<Tag Type=\"" + tName + "\">", false);
+			multipleLinkRefs(sb,level+1);
+			//pad(sb, "</Tag>", false);
 		} else if (tName.equals("*ContainedObjectsList")) {
-			pad(sb, " <Tag Type=\"" + tName + "\">", false);
-			multipleLinkRefs(sb);
-			pad(sb, " </Tag>", false);
+			//pad(sb, "<Tag Type=\"" + tName + "\">", false);
+			multipleLinkRefs(sb,level+1);
+			//pad(sb, "</Tag>", false);
 		} else if (tName.equals("*Link")) {
-			monoLinkRef(sb, tName);
+			monoLinkRef(sb, tName, level+1);
 		} else if (tName.equals("KomaPlot")) {
 			try {
-				pad(sb, " <Tag Type=\"KomaPlot\" " + "h=\"" + getValueAt(0)
-						+ "\" " + "w=\"" + getValueAt(1) + "\" " + "ObjRef=\""
-						+ getValueAt(2) + "\" " + "u=\"" + getValueAt(3)
-						+ "\"/>", false);
+				padele(level+1,sb,"KomaPlot",true,false,
+						true,"h",
+						""+getValueAt(0),"w",
+						""+getValueAt(1),"u", ""+getValueAt(3));
+				padre.getPadre().getObject(getValueAt(2)).toXML(sb, level+1);
+				padele(level+1,sb,"KomaPLot",false,true, true);
 			} catch (Exception e) {
 			}
 		} else if (tName.equals("*ParentPageTree")) {
-			pad(sb, " <Tag Type=\"" + tName + "\" ObjRef=\""
-					+ list.elementAt(0) + "\"/>", false);
 		} else if (tName.equals("Unknown_CC")) {
-			for (int i = 0; i < stringVal.length(); i += 80) {
-				pad(sb, "   "
-						+ stringVal.substring(i, Math.min(i + 80, stringVal
-								.length())), true);
-			}
+			pad(sb,stringVal+"\n",true);
 		} else if (tName.equals("*ImageStream")) {
-			pad(sb, " <Tag Type=\"" + tName + "\" ObjRef=\""
-					+ list.elementAt(0) + "\"/>", false);
+			padele(level,sb,"ImageStream",true,false, true);
+			padre.getPadre().getObject(list.elementAt(0)).toXML(sb, level);
+			padele(level,sb,"ImageStream",false,true, true);
 		} else if (tName.equals("*JumpTo")) {
-			pad(sb, " <Tag Type=\"" + tName + "\" Page=\"" + list.elementAt(0)
-					+ "\" " + "Block=\"" + list.elementAt(2) + "\"/>", false);
+			padele(level,sb,"JumpTo",true,true,
+					true,"Page",
+					""+list.elementAt(0),"Block", ""+list.elementAt(2));
 		} else if (tName.equals("PutSound")) {
-			pad(sb, " <Tag Type=\"" + tName + "\" " +
-					      "Ref1=\"" + getValueAt(0)+ "\" " + 
-					      "Block=\"" + getValueAt(1) + "\"/>", false);
+			padele(level,sb,"PutSound",true,true,
+					true,"Ref1",
+					""+getValueAt(0),"Block", ""+getValueAt(1));
 		} else {
 			if (list.size() == 2) {
-				pad(sb, " <Tag Type=\"" + tName + "\" Val=\""
-						+ list.elementAt(0) + "\"/>", false);
+				padele(level,sb,tName,true,true,true,"Val", ""+list.elementAt(0));
 			} else if (list.size() == 0 && stringVal != null) {
-				pad(sb, " <Tag Type=\"" + tName + "\" Val=\"" + stringVal
-						+ "\"/>", false);
+				padele(level,sb,"StringVal",true,true,true,"Val", stringVal);
 			} else if (list.size() == 0) {
-				pad(sb, " <Tag Type=\"" + tName + "\"/>", false);
+				padele(level,sb,tName,true,true, true);
 			} else {
-				pad(sb, " <Tag Type=\"" + tName + "\">", false);
-				defaultDump(sb);
-				pad(sb, " </Tag>", false);
+				padele(level,sb,tName,true,false, true);
+				defaultDump(level+1,sb);
+				padele(level,sb,tName,false,true, true);
 			}
 		}
 	}
 
-	private void monoLinkRef(StringBuffer sb, String tName) {
+	private void monoLinkRef(StringBuffer sb, String tName, int level) {
 		if (list.size() > 0) {
 			BBObj xRef = padre.getPadre().getObject(list.elementAt(0));
-			String xRefType = (xRef != null ? xRef.getTypeName() : "NOTFOUND");
-			pad(sb, " <Tag Type=\"" + tName + "\" ObjRef=\""
-					+ list.elementAt(0) + "\" RefType=\"" + xRefType + "\"/>", false);
+			if(xRef!=null) {
+				xRef.toXML(sb, level);
+			}else{
+				String xRefType = (xRef != null ? xRef.getTypeName() : "NOTFOUND");
+				pad(sb, "\n<Tag Type=\"" + tName + "\" ObjRef=\""
+						+ list.elementAt(0) + "\" RefType=\"" + xRefType + "\"/>", false);
+			}
 		} else {
-			pad(sb, " <Tag Type=\"" + tName
+			pad(sb, "\n<Tag Type=\"" + tName
 					+ "\" ObjRef=\"NOTEXIST\" RefType=\"NOTFOUND\"/>", false);
 		}
 	}
 
-	private void multipleLinkRefs(StringBuffer sb) {
+	private void multipleLinkRefs(StringBuffer sb, int level) {
 		int numRefs = list.size() / 2;
 		for (int i = 0; i < numRefs; i++) {
 			int xRefID = list.elementAt(i * 2);
 			BBObj xRef = padre.getPadre().getObject(xRefID);
-			String xRefType = xRef.getTypeName();
-			pad(sb, "  <Ref ObjID=\"" + list.elementAt(i * 2) + "\" RefType=\""
-					+ xRefType + "\"/>", false);
+			//String xRefType = xRef.getTypeName();
+			xRef.toXML(sb, level);
 		}
 	}
 
-	private void defaultDump(StringBuffer sb) {
+	private void defaultDump(int level, StringBuffer sb) {
 		if (stringVal != null) {
-			pad(sb, "  <String Val=\"" + stringVal + "\"/>", false);
+			padele(level,sb,"StringVal",true,true,true,"Val", stringVal);
 		}
 		if (list.size() > 0) {
-			pad(sb, "  <List>", false);
+			padele(level,sb,"List",true,false, true);
 			int vpl = 16;
 			int cvpl = 0;
 			String linea = "   ";
@@ -620,8 +619,32 @@ public class Tag implements Renderable, LRFSerial {
 				linea += list.elementAt(i) + ",";
 			}
 			pad(sb, linea, false);
-			pad(sb, "  </List>", false);
+			padele(level,sb,"List",false,true, true);
 		}
+	}
+	
+	public static void padele(
+			int level,StringBuffer sb, String en, 
+			boolean opening, boolean closing, 
+			boolean newline, String ...va ){
+
+		for(int i=0;i<level;i++) 
+			sb.append(" ");
+		if(en.startsWith("*"))
+			en=en.substring(1);
+		if(!opening && closing)
+			sb.append("</").append(en).append(">");
+		else if(opening){
+			sb.append("<").append(en).append(" ");
+			for(int i=0;i<va.length;i+=2)
+				sb.append(" ").append(va[i]).append("=\"").append(va[i+1]).append("\"");
+		}
+		if(opening && closing)
+			sb.append("/>");
+		else if(opening)
+			sb.append(">");
+		if(newline)
+			sb.append("\n");
 	}
 
 	public static void pad(StringBuffer sb, String app, boolean scape) {
@@ -629,7 +652,7 @@ public class Tag implements Renderable, LRFSerial {
 		if(scape){
 			app = Utils.toXMLText(app);
 		}
-		sb.append(app).append("\n");
+		sb.append(app);
 	}
 
 	public static Tag loadTag(BBObj padre, Reader pb, int xorKey)
@@ -797,8 +820,10 @@ public class Tag implements Renderable, LRFSerial {
 				pars.emitText(this);
 			else if(pars.isHeader())
 				pars.emitText(this);
-			else
+			else{
 				pars.emitText(this);
+				pars.forceNewParagraph();
+			}
 			break;
 		case 0x19: // WordSpace
 			pars.setTagVal("wordSpace",getValueAt(0));

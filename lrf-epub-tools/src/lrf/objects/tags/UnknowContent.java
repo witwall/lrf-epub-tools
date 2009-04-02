@@ -23,7 +23,7 @@ public class UnknowContent extends Tag implements LRFSerial {
 		return os.putShort(cnt);
 	}
 	@Override
-	public void toXML(StringBuffer sb) {
+	public void toXML(StringBuffer sb, int level) {
 		if(reader==null)
 			pad(sb,"<UnknowTag shortVal=\""+cnt+"\"/>", false);
 		else{

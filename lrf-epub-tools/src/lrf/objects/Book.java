@@ -36,6 +36,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.rtf.RtfWriter2;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
+
 /**
  * Representa un eBook BBeB
  * 
@@ -324,14 +325,9 @@ public class Book extends EPUBMetaData implements Serializable {
 		String replaced=metaData.substring(1);
 		replaced=replaced.replace("?>", "?>\n<BBeB>");
 		os.write(replaced.getBytes());
-		BBObj ao[]=new BBObj[Objs.size()];
-		int i=0;
-		for(Enumeration<Integer> k=Objs.keys();k.hasMoreElements();)
-			ao[i++]=Objs.get(k.nextElement());
-		Arrays.sort(ao,new Compara());
-		for (int j = 0; j < ao.length; j++) {
-			os.write(ao[j].toString().getBytes());
-		}
+		StringBuffer sb=new StringBuffer(2*1024*1024);
+		getObject(rootObjectId).toXML(sb, 0);
+		os.write(sb.toString().getBytes());
 		os.write("</BBeB>".getBytes());
 	}
 
