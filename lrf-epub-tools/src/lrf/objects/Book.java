@@ -257,8 +257,10 @@ public class Book extends EPUBMetaData implements Serializable {
 		PdfWriter pw = PdfWriter.getInstance(doc, os);
 		pw.setCompressionLevel(9);
 		pw.setCloseStream(false);
-		doc.addAuthor(getAuth());
-		doc.addTitle(getTitle());
+		String au=getAuth();
+		String ti=getTitle();
+		doc.addAuthor(au == null ? "No Author" : au );
+		doc.addTitle( ti == null ? "No Title" : ti);
 		if(getBookID()!=null)
 			doc.addHeader("BookID", getBookID());
 		if(prsSize){
