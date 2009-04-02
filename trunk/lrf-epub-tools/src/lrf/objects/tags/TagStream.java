@@ -93,7 +93,7 @@ public class TagStream extends Tag {
 			byte unscrambled[] = new byte[streamSize];
 			pb.copy(0, unscrambled, 0, streamSize);
 			for (int i = 0; i < size; i++) {
-				unscrambled[i] = (byte) (pb.get(i) ^ key & 0x00ff);
+				unscrambled[i] = (byte) (unscrambled[i] ^ key & 0x00ff);
 			}
 			pb = new ByteReader(unscrambled, 0);
 		}
@@ -176,11 +176,11 @@ public class TagStream extends Tag {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		toXML(sb);
+		toXML(sb,0);
 		return sb.toString();
 	}
 
-	public void toXML(StringBuffer sb) {
+	public void toXML(StringBuffer sb, int level) {
 		String tName = tagNames[id];
 		reader.reset();
 		if(reader.isEmpty())
@@ -188,11 +188,10 @@ public class TagStream extends Tag {
 		int tagCode = reader.getByte();
 		int pt=padre.getType();
 		if (pt == BBObj.ot_Block && tagCode!=3) {
-			pad(sb, " <Tag Type=\"" + tName + "\" EXPECTED LINKREF >", false);
-			String b6 = Base64.encodeBytes(reader.getSubBuf(0, (int) reader
-					.size()));
-			pad(sb, b6.replace("\n", "    \n"), false);
-			pad(sb, " </Tag>", false);
+			padele(level,sb,tName,true,false,true,"Error", "Expected LinkRef");
+			String b6 = Base64.encodeBytes(reader.getSubBuf(0, (int) reader.size()));
+			pad(sb,b6,false);
+			padele(level,sb,tName,false,true, true);
 		} else if (pt == BBObj.ot_TOC) {
 			// El dump se realiza en otro lugar
 		} else if (pt == BBObj.ot_Text 
@@ -200,26 +199,31 @@ public class TagStream extends Tag {
 				|| pt == BBObj.ot_Block
 				|| pt == BBObj.ot_Footer
 				|| pt == BBObj.ot_Header) {
-			pad(sb, " <Stream>", false);
-			for (int i = 0; i < tags.size(); i++)
-				tags.elementAt(i).toXML(sb);
-			pad(sb, " </Stream>", false);
+			padele(level,sb,"Stream",true,false, true);
+			for (int i = 0; i < tags.size(); i++){
+				Tag t=tags.elementAt(i);
+				t.toXML(sb,level+1);
+			}
+			padele(level,sb,"Stream",false,true, true);
 		} else if (tName.equals("*ImageRect")) {
 			reader.reset();
 			addValue(reader.getShort(true), 2);
 			addValue(reader.getShort(true), 2);
 			addValue(reader.getShort(true), 2);
 			addValue(reader.getShort(true), 2);
-			pad(sb, " <Tag Type=\"" + tName + "\" Coord=\"" + getValueAt(0) + ","
-					+ getValueAt(1) + "," + getValueAt(2) + "," + getValueAt(3)
-					+ "\"/>", false);
+			padele(level,sb,tName,true,true,
+					true,"c1",
+					""+getValueAt(0),"c2",
+					""+getValueAt(1),"c3",
+					""+getValueAt(2),"c4", ""+getValueAt(3)
+					);
 		} else {
-			pad(sb, " <Tag Type=\"" + tName + "\" "
-					+ (imageType == null ? "" : "Format=\"" + imageType+"\"") + ">", false);
-			String b6 = Base64.encodeBytes(reader.getSubBuf(0, (int) reader
-					.size()));
-			pad(sb, "   " + b6.replace("\n", "\n   "), false);
-			pad(sb, " </Tag>", false);
+			padele(level,sb,tName,true,false,
+					false,"Format", imageType==null?"Unknown":imageType);
+			String b6 = Base64.encodeBytes(reader.getSubBuf(0, (int) reader.size()));
+			pad(sb,b6,false);
+			pad(sb,"\n",false);
+			padele(level,sb,tName,false,true, true);
 		}
 	}
 

@@ -31,19 +31,18 @@ public class TOC extends BBObj {
 		b.toc=this;
 	}
 
-	public void toXML(StringBuffer sb) {
-		Tag.pad(sb, "<Obj id=\"" + id + "\" objType=\""
-				+ getObjectTypeName(objType).substring(12) + "\">", false);
+	public void toXML(StringBuffer sb,int level) {
+		Tag.pad(sb, "<Obj id=\"" + id + "\" objType=\""+ getObjectTypeName(objType).substring(12) + "\">", false);
 		for (int i = 0; i < tags.size(); i++) {
-			tags.elementAt(i).toXML(sb);
+			tags.elementAt(i).toXML(sb,level+1);
 		}
 		if(ent!=null){
 			for (int i = 0; i < ent.size(); i++) {
 				Entry e = ent.elementAt(i);
 				Tag.pad(sb, " <TOCEntry label=\"" + e.lab + "\" Page=\"" + e.pag
-						+ "\" ObjRef=\"" + e.ref + "\"/>", false);
+						+ "\" ObjRef=\"" + e.ref + "\"/>\n", false);
 			}
 		}
-		Tag.pad(sb, "</Obj>", false);
+		Tag.pad(sb, "</Obj>\n", false);
 	}
 }

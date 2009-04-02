@@ -240,17 +240,20 @@ public class BBObj implements LRFSerial,Renderable  {
 
 	public String toString() {
 		StringBuffer xObjs = new StringBuffer();
-		toXML(xObjs);
+		toXML(xObjs,0);
 		return xObjs.toString();
 	}
 
-	public void toXML(StringBuffer sb) {
-		Tag.pad(sb, "<Obj ID=\"" + id + "\" objType=\""
-				+ getObjectTypeName(objType).substring(12) + "\">", false);
+	public void toXML(StringBuffer sb,int level) {
+		//Nombre del objeto
+		String on=getObjectTypeName(objType).substring(12);
+		Tag.padele(level, sb, on, true, false, true, "ID",""+id);
 		for (int i = 0; i < tags.size(); i++) {
-			tags.elementAt(i).toXML(sb);
+			tags.elementAt(i).toXML(sb,level+1);
 		}
-		Tag.pad(sb, "</Obj>", false);
+		for(int i=0;i<level;i++)
+			Tag.pad(sb, " ", false);
+		Tag.padele(level, sb, on, false	, true, true);
 	}
 
 	@Override
