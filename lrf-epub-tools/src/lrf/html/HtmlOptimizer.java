@@ -20,7 +20,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 public class HtmlOptimizer {
 	class pair {
@@ -335,7 +334,7 @@ public class HtmlOptimizer {
 		HtmlStyle mostUsed=new HtmlStyle(rev.get(cn));
 		StyleItem fs=mostUsed.getStyle("font-size");
 		float dividefactor=1.0F;
-		if(fs.unit==null || fs.unit.length()==0){
+		if(fs!=null &&(fs.unit==null || fs.unit.length()==0)){
 			dividefactor=fs.number / 0.8f;
 		}
 		for(Enumeration<String> e=rev.keys();e.hasMoreElements();){
@@ -352,8 +351,11 @@ public class HtmlOptimizer {
 		}
 		estilos=new Hashtable<String, String>();
 		for(Enumeration<String> n=rev.keys();n.hasMoreElements();){
-			String nnn=n.nextElement();
-			estilos.put(rev.get(nnn), nnn);
+			String styleClassName=n.nextElement();
+			String styleDef=rev.get(styleClassName);
+			while(estilos.get(styleDef)!=null)
+				styleDef+=" ";
+			estilos.put(styleDef, styleClassName);
 			
 		}
 	}

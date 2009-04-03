@@ -18,6 +18,8 @@ public class HtmlStyle {
 	Hashtable<String,StyleItem> vitems=new Hashtable<String,StyleItem>();
 	
 	public HtmlStyle(String list){
+		if(list==null)
+			list="";
 		StringTokenizer st=new StringTokenizer(list,";");
 		while(st.hasMoreTokens()){
 			String style=st.nextToken();

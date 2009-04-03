@@ -21,6 +21,7 @@ public class Tag implements Renderable, LRFSerial {
 	public static int currentFontSize=-1;
 	public static int currentBaseLineSkip=-1;
 	public static int fontSizeSigma=0;
+	boolean emitLN=true;
 
 	@Override
 	public int serial(BBeBOutputStream os, int promoteID) throws IOException {
@@ -822,7 +823,8 @@ public class Tag implements Renderable, LRFSerial {
 				pars.emitText(this);
 			else{
 				pars.emitText(this);
-				pars.forceNewParagraph();
+				if(emitLN)
+					pars.forceNewParagraph();
 			}
 			break;
 		case 0x19: // WordSpace
