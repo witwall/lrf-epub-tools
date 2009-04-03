@@ -68,12 +68,20 @@ public class TagStream extends Tag {
 					tags.add(t);
 			}
 		}
+		//Procesamos para que bold e Italic no rompan parrafo.
+		for(int i=0;i<tags.size();i++){
+			Tag t=tags.get(i);
+			if("ItalicBegin ItalicEnd FontWeight".indexOf(t.getName())>=0)
+				if(i>0)
+					tags.elementAt(i-1).emitLN=false;
+		}
 	}
 
 	public static Tag procStream(BBObj padre, int tagID, Reader pb, int xorKey)
 			throws UnsupportedEncodingException {
 		// stream size
 		int streamFlags = pb.getShort(true);
+		int calculatedDescramblingKey=-1;
 		pb.getShort(true); //
 		int streamSize = pb.getInt(true);
 		pb.getShort(true);
@@ -83,7 +91,8 @@ public class TagStream extends Tag {
 		// stream start
 		if ((streamFlags & 0x200) == 0x200) {
 			int size = streamSize;
-			int key = (size % xorKey) + 0x0F;
+			int xk=xorKey&0xff;
+			calculatedDescramblingKey=(size % xk) + 0x0F;
 			int tt=padre.getType();
 			if (size > 0x400 && (tt==BBObj.ot_ImageStream || 
 					             tt==BBObj.ot_Font ||
@@ -93,7 +102,7 @@ public class TagStream extends Tag {
 			byte unscrambled[] = new byte[streamSize];
 			pb.copy(0, unscrambled, 0, streamSize);
 			for (int i = 0; i < size; i++) {
-				unscrambled[i] = (byte) (unscrambled[i] ^ key & 0x00ff);
+				unscrambled[i] = (byte) (unscrambled[i] ^ calculatedDescramblingKey & 0x00ff);
 			}
 			pb = new ByteReader(unscrambled, 0);
 		}
@@ -110,7 +119,7 @@ public class TagStream extends Tag {
 				imageType = ".png";
 			}
 		}
-		if (((streamFlags & 0x100) == 0x100)) {
+		if (((streamFlags & 0x100) == 0x100) && streamSize>0) {
 			// Decompress the bytescd tgmp
 			try {
 				int decompSize = pb.getInt(false);
@@ -122,8 +131,9 @@ public class TagStream extends Tag {
 				Reader br = new ByteReader(result, 0);
 				ts = new TagStream(tagID, padre, br);
 			} catch (Exception e) {
-				System.out.print("Error inflating data id="+padre.getID()+",size="+streamSize);
-				System.out.print(":Brute force descrambling...");
+				System.out.print("Error inflating id="+padre.getID()+",size="+streamSize);
+				System.out.print(",oldkey="+Integer.toHexString(calculatedDescramblingKey));
+				System.out.print(":descrambling...");
 				byte scrambled[] = new byte[streamSize];
 				main.copy(0, scrambled, 0, streamSize);
 				byte unscrambled[] = new byte[streamSize];
@@ -138,7 +148,7 @@ public class TagStream extends Tag {
 						decompresser.setInput(pb.getSubBuf(4, streamSize - 4));
 						byte[] result = new byte[decompSize>0x800000 ? 0x800000 : decompSize];
 						decompresser.inflate(result);
-						System.out.println("KEY FOUND!");
+						System.out.println("KEY FOUND!:"+Integer.toHexString(kk));
 						decompresser.end();
 						Reader br = new ByteReader(result, 0);
 						ts = new TagStream(tagID, padre, br);

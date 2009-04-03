@@ -19,7 +19,15 @@ public class BookAtr extends BBObj {
 		Tag.currentBaseLineSkip=-1;
 		Tag.currentFontSize=-1;
 		pars.push(this);
-		int cpt=getTagAt(0).getValueAt(0); //ChildPageTree
+		
+		int i;
+		for(i=0;i<tags.size();i++)
+			if(tags.elementAt(i).getType()==123)//ChildPageTree
+				break;
+		Tag cptTag=tags.elementAt(i);
+		
+		int cpt=cptTag.getValueAt(0); //ChildPageTree
+		
 		padre.getObject(cpt).render(pars);
 		pars.pop();
 		pars.forceNewParagraph();
