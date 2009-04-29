@@ -112,8 +112,7 @@ public class RendererIText extends BaseRenderer {
 	public void dumpImage(int id, String ext, byte[] b) throws Exception {
 		String imgURL=imagenes.get(id);
 		if(imgURL==null){
-			numImages++;
-			imgURL=File.separator+(numImages)+ext;
+			imgURL=File.separator+(normName(++numImages))+ext;
 			if(RecurseDirs.zout!=null){
 				throw new DocumentException("convert to html does not support zipfile");
 			}else{
@@ -131,13 +130,21 @@ public class RendererIText extends BaseRenderer {
 			com.lowagie.text.Image.getInstance(imagesDir.getCanonicalFile()+imgURL);
 		if(img.getAlt()==null || img.getAlt().length()==0)
 			img.setAlt(imgURL);
-		URL turl=new URL("file:"+imgPath+(numImages)+ext);
+		URL turl=new URL("file:"+imgPath+normName(numImages)+ext);
 		img.setUrl(turl);
 		Paragraph pgp=new Paragraph();
 		pgp.setAlignment(Paragraph.ALIGN_CENTER);
 		pgp.add(img);
 		doc.add(pgp);
 		imagenes.put(id,imgURL);
+	}
+
+	private String normName(int i) {
+		String aux1;
+		aux1="00000000";
+		String aux2=""+i;
+		aux1=aux1.substring(0,aux1.length()-aux2.length())+aux2;
+		return aux1;
 	}
 
 	/* (non-Javadoc)

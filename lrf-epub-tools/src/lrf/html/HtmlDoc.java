@@ -187,9 +187,7 @@ public class HtmlDoc implements EPUBEntity{
 		//Eliminamos los div/div y span/span vacios
 		{
 			int pdo=-1;
-			int pdc=-1;
 			int pso=-1;
-			int psc=-1;
 			boolean hasContent=false;
 			for(int i=0;i<sz;i++){
 				String em=emits.get(i);

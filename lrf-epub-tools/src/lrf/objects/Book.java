@@ -8,8 +8,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.zip.InflaterInputStream;
@@ -23,7 +21,6 @@ import lrf.conv.RendererIText;
 import lrf.epub.EPUBMetaData;
 import lrf.html.HtmlDoc;
 import lrf.html.HtmlOptimizer;
-import lrf.parse.Compara;
 import lrf.parse.ParseException;
 
 import com.lowagie.text.DocWriter;
