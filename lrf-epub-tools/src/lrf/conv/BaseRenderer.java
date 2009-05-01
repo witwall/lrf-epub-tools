@@ -11,6 +11,7 @@ import lrf.objects.tags.Tag;
 
 public abstract class BaseRenderer implements Renderer {
 	public static String embeddedFont=null;
+	public static String ttcNumber=null;
 	public static boolean noPageBreakEmit=false;
 	protected Hashtable<String, Tag> current = new Hashtable<String, Tag>();
 	protected boolean emptyParagraph = true;
