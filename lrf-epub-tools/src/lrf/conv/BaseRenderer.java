@@ -10,6 +10,7 @@ import lrf.objects.BBObj;
 import lrf.objects.tags.Tag;
 
 public abstract class BaseRenderer implements Renderer {
+	public static String embeddedFont=null;
 	public static boolean noPageBreakEmit=false;
 	protected Hashtable<String, Tag> current = new Hashtable<String, Tag>();
 	protected boolean emptyParagraph = true;
@@ -71,6 +72,10 @@ public abstract class BaseRenderer implements Renderer {
 	 * @see lrf.conv.Renderer#getTagValAsString(java.lang.String)
 	 */
 	public String getTagValAsString(String name){
+		if(name.equalsIgnoreCase("fontFaceName")){
+			if(BaseRenderer.embeddedFont!=null)
+				return "user";
+		}
 		Tag rv=current.get(name);
 		if(rv!=null){
 			return rv.getStringVal();
