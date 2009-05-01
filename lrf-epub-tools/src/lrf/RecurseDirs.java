@@ -23,6 +23,7 @@ import lrf.pdf.PDF2SVG;
 import lrf.pdf.PDFSerializer;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.xml.xmp.XmpWriter;
@@ -229,7 +230,6 @@ public class RecurseDirs {
 				EPUBMetaData.doNotEmbedOTFFonts = true;
 			if (args[i].equalsIgnoreCase("-nopb"))
 				BaseRenderer.noPageBreakEmit = true;
-
 		}
 		if (assvg) {
 			PDF2SVG.dirDest = dirOut;
@@ -329,6 +329,15 @@ public class RecurseDirs {
 				BaseRenderer.noPageBreakEmit = true;
 			if (args[i].equalsIgnoreCase("-noe"))
 				EPUBMetaData.doNotEmbedOTFFonts = true;
+			if(args[i].equalsIgnoreCase("-font")){
+				BaseRenderer.embeddedFont=args[++i];
+				BaseFont userbf=BaseFont.createFont(
+						BaseRenderer.embeddedFont, 
+						BaseFont.CP1252, 
+						BaseFont.EMBEDDED);
+				
+				Book.bfonts.put("user",userbf);
+			}
 		}
 		if (root == null || (!xml && !pdf && !rtf && !html && !epub)) {
 			UsageAndExit();
