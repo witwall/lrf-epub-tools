@@ -33,11 +33,12 @@ Actions:
  
  You cannot output HTML files to a zipfile right now.
 
-2) convertPDF dir (-d dirOut) [-noo|-SVG|-noe|-nopb]
+2) convertPDF dir (-d dirOut) [-noo|-SVG|-noe|-nopb|-font filename.ttf]
  
   Converts every PDF in 'dir' (with recursion) to EPUB format.
   -SVG means use batik to generate Scalable Vector Graphics for each page
   Other options same as convertLRF.
+  If -font is specified, this font is embedded and all text is referenced to it.
   
 3) convertDOCX dir (-d dirOut) [-noo|-noe|nopb]
   
