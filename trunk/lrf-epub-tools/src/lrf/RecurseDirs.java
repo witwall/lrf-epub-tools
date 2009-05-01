@@ -329,11 +329,12 @@ public class RecurseDirs {
 				BaseRenderer.noPageBreakEmit = true;
 			if (args[i].equalsIgnoreCase("-noe"))
 				EPUBMetaData.doNotEmbedOTFFonts = true;
-			if(args[i].equalsIgnoreCase("-font")){
+			if(args[i].equalsIgnoreCase("-cfont")){
 				BaseRenderer.embeddedFont=args[++i];
+				BaseRenderer.ttcNumber=args[++i];
 				BaseFont userbf=BaseFont.createFont(
-						BaseRenderer.embeddedFont, 
-						BaseFont.CP1252, 
+						BaseRenderer.embeddedFont+","+BaseRenderer.ttcNumber, 
+						BaseFont.IDENTITY_H, 
 						BaseFont.EMBEDDED);
 				
 				Book.bfonts.put("user",userbf);
