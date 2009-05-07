@@ -35,7 +35,7 @@ public class TreeDir extends EPUBMetaData {
 		}
 	}
 	
-	private void recurseDirs(File d, XMLNode navPoint) throws IOException {
+	private void recurseDirs(File d, XMLNode navPoint) throws IOException, Exception {
 		File list[]=d.listFiles();
 		if(list==null)
 			return;

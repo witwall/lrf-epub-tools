@@ -41,7 +41,9 @@ public class STDrawing implements State {
 
 	private Vector<String> imgs=new Vector<String>();
 	@Override
-	public void startEle(Context context, SHRelations rels, String uri, String lName, String name, Attributes attr) {
+	public void startEle(Context context, SHRelations rels, String uri, String lName, 
+			             String name, Attributes attr) 
+	throws Exception{
 		if(lName.equals("blip")){
 			String imgId=attr.getValue("r:embed");
 			

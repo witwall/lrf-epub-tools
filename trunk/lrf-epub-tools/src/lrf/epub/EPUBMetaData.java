@@ -332,31 +332,34 @@ public abstract class EPUBMetaData {
 		return tocDepth;
 	}
 
-	public void processFile(File f, String epubUrl) throws FileNotFoundException, IOException{
+	public void processFile(File f, String epubUrl) 
+	throws FileNotFoundException, IOException, Exception {
 		InputStream is=new FileInputStream(f);
 		processFile(is,epubUrl);
 		is.close();
 	}
 	
-	public void processFile(String content, String epubUrl) throws IOException{
+	public void processFile(String content, String epubUrl) 
+	throws IOException, Exception{
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
 		baos.write(content.getBytes());
 		processFile(baos, epubUrl);
 	}
 	
-	public void processFile(ByteArrayOutputStream bos, String epubUrl) throws FileNotFoundException, IOException{
+	public void processFile(ByteArrayOutputStream bos, String epubUrl) 
+	throws FileNotFoundException, IOException, Exception{
 		ByteArrayInputStream bis=new ByteArrayInputStream(bos.toByteArray());
 		processFile(bis, epubUrl);
 	}
 	
 	public void processFile(InputStream is, String epubUrl) throws IOException,
-			FileNotFoundException {
+			FileNotFoundException, Exception {
 		
 		epubUrl=Utils.toUnhandText(epubUrl);
 		
 		String fnl = epubUrl.toLowerCase();
 		if (fnl.endsWith(".html")) {
-			String contenido = htmlToXhtml(is);
+			String contenido = htmlToXhtml(epubUrl,is);
 			String xurl = epubUrl.substring(0, epubUrl.length() - 5) + ".xhtml";
 			mftAddNodoAndSpine(xurl, true);
 			addMemoryContent(xurl, contenido, 5);
@@ -396,7 +399,7 @@ public abstract class EPUBMetaData {
 		}
 	}
 
-	protected String htmlToXhtml(InputStream is) throws IOException {
+	protected String htmlToXhtml(String fn, InputStream is) throws IOException,Exception {
 		String contenido=null;
 		Tidy tidy = new Tidy();
 		tidy.setXmlOut(true);
@@ -406,7 +409,8 @@ public abstract class EPUBMetaData {
 		tidy.setQuiet(true);
 		tidy.setMakeClean(true);
 		//tidy.setWord2000(true);
-		PrintWriter nullPW=new PrintWriter(new ByteArrayOutputStream());
+		ByteArrayOutputStream baoAux=new ByteArrayOutputStream();
+		PrintWriter nullPW=new PrintWriter(baoAux);
 		tidy.setErrout(nullPW);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		BufferedOutputStream bos = new BufferedOutputStream(baos);
@@ -414,13 +418,18 @@ public abstract class EPUBMetaData {
 		tidy.parse(bis, bos);
 		contenido= new String(baos.toByteArray());
 		contenido = contenido.replaceAll("src=\"file:", "src=\"");
+		if(contenido==null || contenido.length()==0){
+			nullPW.flush();
+			System.out.println(fn+":"+baoAux.toString());
+			throw new Exception("Tidy error");
+		}
 		bis.close();
 		bos.close();
 		return contenido;
 	}
 
 	public void buildCSS(String epubUrl, Hashtable<String, String> estilos, boolean putLineHeight) 
-	throws FileNotFoundException, IOException{
+	throws FileNotFoundException, IOException, Exception{
 		//Volcamos los estilos
 		ByteArrayOutputStream bos=new ByteArrayOutputStream();
 		PrintWriter pw=new PrintWriter(bos);

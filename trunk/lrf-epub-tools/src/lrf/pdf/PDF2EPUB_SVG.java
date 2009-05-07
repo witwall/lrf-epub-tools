@@ -47,7 +47,7 @@ public class PDF2EPUB_SVG extends EPUBMetaData {
 		return title;
 	}
 
-	public void addPage(int i, int width, int height) throws IOException{
+	public void addPage(int i, int width, int height) throws IOException, Exception{
 		ByteArrayOutputStream baos=new ByteArrayOutputStream();
 		PrintWriter pw=new PrintWriter(baos);
 		width=600;

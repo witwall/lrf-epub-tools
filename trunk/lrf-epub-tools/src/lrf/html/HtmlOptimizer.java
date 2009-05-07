@@ -37,7 +37,6 @@ public class HtmlOptimizer {
 		}
 	}
 	Hashtable<String, String> anchorDest = new Hashtable<String, String>();
-	boolean beginPage;
 	ByteArrayOutputStream bos;
 	String css = null;
 	File dirOut;
@@ -45,6 +44,7 @@ public class HtmlOptimizer {
 	Hashtable<String, Integer> statStyleData;
 	File fileHtml;
 	Node head = null;
+	Node html=null;
 
 	HtmlDoc htmlDoc = null;
 	int pageNumber;
@@ -84,22 +84,6 @@ public class HtmlOptimizer {
 		}
 		ret+=closingTag(n);
 		return ret;
-	}
-	private void checkDocSizeLimit() throws Exception {
-		if (beginPage && head != null) {
-			beginPage = false;
-			pw.println("<html>");
-			pw.println(dumpNode(head));
-		}
-		if (paginateKB >= 50 && bos.size() > paginateKB * 1024) {
-			beginPage = true;
-			pw.println("</body></html>");
-			pw.flush();
-			next(pname + "-" + (pageNumber) + ".html", bos);
-			pageNumber++;
-			bos = new ByteArrayOutputStream();
-			pw = new PrintWriter(bos);
-		}
 	}
 	private void flushPairs() throws IOException {
 		for (int i = 0; i < pairs.size(); i++) {
@@ -167,7 +151,6 @@ public class HtmlOptimizer {
 		estilos = new Hashtable<String, String>();
 		statStyleData=new Hashtable<String, Integer>();
 		head = null;
-		beginPage = true;
 		pageNumber = 1;
 		styleNumber = 0;
 		pname = fileHtml.getName();
@@ -175,7 +158,8 @@ public class HtmlOptimizer {
 			pname = pname.substring(0, pname.lastIndexOf('.'));
 		}
 		NodeList list = doc.getChildNodes();
-		for (int i = 0; i < list.getLength(); i++) {
+		int numberChilds=list.getLength();
+		for (int i = 0; i < numberChilds; i++) {
 			Node nodo = list.item(i);
 			recurse(nodo);
 		}
@@ -254,10 +238,13 @@ public class HtmlOptimizer {
 	}
 	
 	private void recurse(Node nodo) throws Exception {
+		//Dump del opening tag
 		boolean printTag = true;
 		NamedNodeMap attr=nodo.getAttributes();
 		if (nodo.getNodeType() == Node.TEXT_NODE) {
-			pw.print(nodo.getTextContent());
+			String tc=nodo.getTextContent();
+			tc=Utils.toXMLText(tc);
+			pw.print(tc);
 			return;
 		}
 		if (procStyles && attr!=null && attr.getNamedItem("style") != null) {
@@ -266,7 +253,7 @@ public class HtmlOptimizer {
 		String n = nodo.getNodeName();
 		if (n.equals("HEAD")) {
 			head = nodo;
-			return;
+			//return;
 		} else if (n.equals("IMG")) {
 			try {
 				String href = attr.getNamedItem("src").getNodeValue();
@@ -282,7 +269,8 @@ public class HtmlOptimizer {
 				// No incorporamos la imagen
 			}
 		} else if (n.equals("HTML")) {
-			printTag = false;
+			html = nodo;
+			//printTag = false;
 		} else if (n.equals("A")) {
 			Node nodName=attr.getNamedItem("name");
 			if(nodName!=null){
@@ -295,16 +283,31 @@ public class HtmlOptimizer {
 		}
 		if (printTag)
 			printOpeningTag(nodo);
+		//Dump de los hijos
 		NodeList list = nodo.getChildNodes();
 		if (list != null) {
 			for (int i = 0; i < list.getLength(); i++) {
 				recurse(list.item(i));
 			}
 		}
+		//Dump del closing
 		if (printTag) {
 			printClosingTag(nodo);
-			if (n.equals("DIV") || n.equals("P"))
-				checkDocSizeLimit();
+			//Ceck Document size ilmits
+			pw.flush();
+			if (n.equals("DIV") || n.equals("P")) {
+				//pw.print("\n");
+				if (paginateKB >= 50 && bos.size() > paginateKB * 1024) {
+					pw.println("</body></html>");
+					next(pname + "-" + (pageNumber) + ".html", bos);
+					pageNumber++;
+					bos = new ByteArrayOutputStream();
+					pw = new PrintWriter(bos);
+					printOpeningTag(html);
+					recurse(head);
+					pw.println("<body>");
+				}
+			}
 		}
 	}
 

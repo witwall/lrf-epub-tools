@@ -18,11 +18,16 @@ public class SHDocument extends DefaultHandler {
 		context.doStartDocument();
 	}
 
-	public void startElement(String uri, String localName, String qName, Attributes attributes) {
+	public void startElement(String uri, String localName, String qName, Attributes attributes)
+	 {
 		if (uri.equals(WORDPROCESSINGML)) {
 			context.setStartState(localName);// set state
 		}
-		context.doStartElement(uri, localName, qName, attributes);
+		try {
+			context.doStartElement(uri, localName, qName, attributes);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public void characters(char[] ch, int offset, int length) {

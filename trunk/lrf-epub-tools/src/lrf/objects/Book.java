@@ -168,7 +168,7 @@ public class Book extends EPUBMetaData implements Serializable {
 				createNavPoint(Utils.toTOCText(t.lab), opt.getRealDest("P"+t.pag), getNavMap());
 			}
 		}else{
-			createNavPoint("Top", fileName+"-1.xhtml#top", getNavMap());
+			createNavPoint("Top", fileName+"-1.xhtml", getNavMap());
 		}
 		close();
 	}
