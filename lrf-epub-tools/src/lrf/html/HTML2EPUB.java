@@ -63,7 +63,7 @@ public class HTML2EPUB extends EPUBMetaData {
 		nameNoExt=nameNoExt.substring(0,nameNoExt.lastIndexOf('.'));
 		init(dirOfHTMLFile.getAbsolutePath()+File.separator+nameNoExt+".epub");
 		//Convertimos a xhtml
-		String contenido=htmlToXhtml(new FileInputStream(htmlFile));
+		String contenido=htmlToXhtml(nameNoExt,new FileInputStream(htmlFile));
 		File xhtmlFile=new File(dirOfHTMLFile,nameNoExt+".xhtml");
 		FileOutputStream fos=new FileOutputStream(xhtmlFile);
 		fos.write(contenido.getBytes());

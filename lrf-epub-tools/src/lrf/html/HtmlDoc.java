@@ -70,7 +70,7 @@ public class HtmlDoc implements EPUBEntity{
 			emits.add(anchorAntes);
 			anchorAntes=null;
 		}
-		emits.add(txt);
+		emits.add(Utils.toXMLText(txt));
 		if(anchorDespues!=null){
 			emits.add(anchorDespues);
 			anchorDespues=null;
@@ -178,7 +178,7 @@ public class HtmlDoc implements EPUBEntity{
 		return ret;
 	}
 	
-	public void createEPUB(EPUBMetaData e, String catpar) {
+	public void createEPUB(EPUBMetaData e, String catpar) throws Exception {
 		int sz=emits.size();
 		String divAnterior="1",divActual="2";
 		String spanAnterior="",spanActual="";

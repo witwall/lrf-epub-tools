@@ -125,7 +125,8 @@ public class Context extends EPUBMetaData{
 		state.startDoc(this);
 	}
 
-	public void doStartElement(String uri, String localName, String qName, Attributes attr) {
+	public void doStartElement(String uri, String localName, String qName, Attributes attr)
+	throws Exception {
 		state.startEle(this, rels, uri, localName, qName, attr);
 	}
 
@@ -173,7 +174,7 @@ public class Context extends EPUBMetaData{
 		}
 	}
 	
-	public void addBytes(String name, byte[] content) {
+	public void addBytes(String name, byte[] content) throws Exception {
 		try {
 			ByteArrayInputStream bais=new ByteArrayInputStream(content);
 			processFile(bais, name);
@@ -249,7 +250,7 @@ public class Context extends EPUBMetaData{
 	}
 
 	public static final String command="$command@ ";
-	private void serialize() throws IOException, FileNotFoundException {
+	private void serialize() throws IOException, FileNotFoundException, Exception {
 		int pk=0;
 		String st=styles.getCSS();
 		ByteArrayOutputStream bos=new ByteArrayOutputStream();

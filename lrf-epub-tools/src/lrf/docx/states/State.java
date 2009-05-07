@@ -8,7 +8,9 @@ import org.xml.sax.Attributes;
 public interface State {
 	public abstract void startDoc(Context ctx);
 
-	public abstract void startEle(Context ctx, SHRelations rels, String uri, String lName, String qName, Attributes attr);
+	public abstract void startEle(Context ctx, SHRelations rels, String uri, 
+			String lName, String qName, Attributes attr)
+	throws Exception;
 
 	public abstract void endEle(Context ctx, String uri, String lName, String qName);
 
