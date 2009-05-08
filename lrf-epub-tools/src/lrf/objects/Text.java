@@ -19,7 +19,7 @@ public class Text extends BBObj {
 			Tag t=getTags().elementAt(i);
 			t.render(pars);
 		}
-		pars.forceNewParagraph();
+		//pars.forceNewParagraph();
 		pars.pop();
 	}
 }

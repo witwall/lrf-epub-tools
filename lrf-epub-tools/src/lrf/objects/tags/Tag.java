@@ -21,7 +21,7 @@ public class Tag implements Renderable, LRFSerial {
 	public static int currentFontSize=-1;
 	public static int currentBaseLineSkip=-1;
 	public static int fontSizeSigma=0;
-	boolean emitLN=true;
+	boolean emitLN=false;
 
 	@Override
 	public int serial(BBeBOutputStream os, int promoteID) throws IOException {

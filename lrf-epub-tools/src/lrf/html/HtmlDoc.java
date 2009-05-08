@@ -189,7 +189,7 @@ public class HtmlDoc implements EPUBEntity{
 			int pdo=-1;
 			int pso=-1;
 			boolean hasContent=false;
-			for(int i=0;i<sz;i++){
+			for(int i=0;i<emits.size();i++){
 				String em=emits.get(i);
 				if(em.startsWith("<div")){
 					pdo=i;
@@ -215,7 +215,10 @@ public class HtmlDoc implements EPUBEntity{
 				
 			}
 		}
-		for(int i=0;i<sz;i++){
+		for(int i=0;i<emits.size();i++)
+			if(emits.get(i).length()==0)
+				emits.remove(i--);
+		for(int i=0;i<emits.size();i++){
 			String base=emits.elementAt(i);
 			boolean isText=!base.startsWith("<");
 			//Concatenar parrafos
@@ -246,7 +249,7 @@ public class HtmlDoc implements EPUBEntity{
 				spanAnteriorNdx=i;
 			}
 		}
-		for(int i=0;i<sz;i++){
+		for(int i=0;i<emits.size();i++){
 			pw.print(emits.elementAt(i));
 		}
 		pw.flush();
