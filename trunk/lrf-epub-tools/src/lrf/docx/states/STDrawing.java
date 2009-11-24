@@ -1,6 +1,5 @@
 package lrf.docx.states;
 
-import java.io.File;
 import java.util.Vector;
 
 import lrf.docx.Context;
@@ -38,8 +37,12 @@ public class STDrawing implements State {
 		// TODO Auto-generated method stub
 
 	}
+	
+	public void deleteCache(){
+		imgs=new Vector<String>();
+	}
 
-	private Vector<String> imgs=new Vector<String>();
+	private Vector<String> imgs;
 	@Override
 	public void startEle(Context context, SHRelations rels, String uri, String lName, 
 			             String name, Attributes attr) 
@@ -49,8 +52,8 @@ public class STDrawing implements State {
 			
 			if(imgId!=null){
 				Relation rel=rels.getRelation(imgId);
-				File ff=new File(context.getFNOut());
-				String tgt=ff.getName()+"-"+rel.target;
+				//File ff=new File(context.getFNOut());
+				String tgt=rel.target;
 				tgt=tgt.replace("/", "-");
 				tgt=tgt.replace("\\", "-");
 				String toadd=

@@ -323,6 +323,9 @@ public class RecurseDirs {
 			if (args[i].equalsIgnoreCase("-catpar")) {
 				catpar = args[++i];
 			}
+			if(args[i].equalsIgnoreCase("-usep")) {
+				EPUBMetaData.usep=true;
+			}
 			if (args[i].equalsIgnoreCase("-noo"))
 				noo = true;
 			if (args[i].equalsIgnoreCase("-nopb"))
