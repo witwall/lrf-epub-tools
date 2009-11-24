@@ -67,6 +67,8 @@ public class Context extends EPUBMetaData{
 			factory.setNamespaceAware(true);
 			// Parse Document relations
 			byte docxml[];
+			//Init images
+			STDrawing.getInstance().deleteCache();
 			docxml=getZipOSNamed("word/_rels/document.xml.rels");
 			parser=factory.newSAXParser();
 			SHRelations rels=new SHRelations(this);
@@ -280,7 +282,7 @@ public class Context extends EPUBMetaData{
 				bypass=true;
 			}else if(!line.startsWith("<") && currentCommand!=null){
 				if(currentCommand.startsWith("np")){
-					createNavPoint(line, "chain-"+(pk)+".xhtml#autoRef"+(autoRef), getNavMap());
+					//createNavPoint(line, "chain-"+(pk)+".xhtml#autoRef"+(autoRef), getNavMap());
 				}else if(currentCommand.startsWith("hl ")){
 					line="<a href=\"#"+currentCommand.substring(3)+"\">"+line+"</a>";
 				}else if(currentCommand.startsWith("bms ")){

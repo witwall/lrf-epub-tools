@@ -338,6 +338,12 @@ public class Utils {
 		return baos.toByteArray();
 	}
 	
+	public static byte[] readBytesFromStream(InputStream is) throws IOException{
+		ByteArrayOutputStream baos=new ByteArrayOutputStream();
+		writeTo(is, baos);
+		return baos.toByteArray();
+	}
+	
 	public static String surroundWithQuotes(String style, String tgt) {
 		int pos=style.indexOf(tgt);
 		if(pos>=0){

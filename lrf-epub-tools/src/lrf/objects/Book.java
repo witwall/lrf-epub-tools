@@ -13,6 +13,7 @@ import java.util.Vector;
 import java.util.zip.InflaterInputStream;
 
 import lrf.Utils;
+import lrf.buffer.ByteOutputStream;
 import lrf.buffer.MappedReader;
 import lrf.buffer.Reader;
 import lrf.conv.Renderer;
@@ -31,7 +32,6 @@ import com.lowagie.text.html.HtmlWriter;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.rtf.RtfWriter2;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
 
 /**

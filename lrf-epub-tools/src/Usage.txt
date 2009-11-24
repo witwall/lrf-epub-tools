@@ -33,6 +33,8 @@ Actions:
  
  -cfont filename.ttc font# : choose font# from font collection cfont
  
+ -usep change <div> to <p> in HTML output.
+ 
  You cannot output HTML files to a zipfile right now.
 
 2) convertPDF dir (-d dirOut) [-noo|-SVG|-noe|-nopb]

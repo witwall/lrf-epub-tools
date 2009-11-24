@@ -26,9 +26,9 @@ import org.w3c.tidy.Tidy;
 public abstract class EPUBMetaData {
 
 	public String language=null;
-	
 	public static final String ffam="Linux Libertine O";
 	public static boolean doNotEmbedOTFFonts=false;
+	public static boolean usep=false;
 	public static String[][] otfDefs={
 		{"fonts/LinLibertine_Re-2.8.14.otf",
 			"Linux Libertine O",
@@ -352,6 +352,12 @@ public abstract class EPUBMetaData {
 		processFile(bis, epubUrl);
 	}
 	
+	private String procUseP(String contenido){
+		contenido=contenido.replace("<div",  "<p");
+		contenido=contenido.replace("</div", "</p");
+		return contenido;
+	}
+	
 	public void processFile(InputStream is, String epubUrl) throws IOException,
 			FileNotFoundException, Exception {
 		
@@ -362,6 +368,9 @@ public abstract class EPUBMetaData {
 			String contenido = htmlToXhtml(epubUrl,is);
 			String xurl = epubUrl.substring(0, epubUrl.length() - 5) + ".xhtml";
 			mftAddNodoAndSpine(xurl, true);
+			if(usep){
+				contenido=procUseP(contenido);
+			}
 			addMemoryContent(xurl, contenido, 5);
 		} else if (fnl.endsWith(".jpg") || fnl.endsWith(".jpeg")) {
 			mftAddNodoAndSpine(epubUrl, false);
@@ -380,7 +389,15 @@ public abstract class EPUBMetaData {
 			addIS(epubUrl, is, 5);
 		} else if (fnl.endsWith(".xhtml")) {
 			mftAddNodoAndSpine(epubUrl, true);
-			addIS(epubUrl, is, 5);
+			if(usep){
+				ByteArrayOutputStream baos=new ByteArrayOutputStream();
+				Utils.writeTo(is, baos);
+				String con=baos.toString();
+				con=procUseP(con);
+				addMemoryContent(epubUrl, con, 5);
+			}else{
+				addIS(epubUrl, is, 5);
+			}
 		} else if (fnl.endsWith(".xml")) {
 			mftAddNodoAndSpine(epubUrl, true);
 			addIS(epubUrl, is, 5);

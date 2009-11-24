@@ -10,7 +10,8 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import org.jcp.xml.dsig.internal.dom.Utils;
+import lrf.Utils;
+
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.resource.CSSResource;
 import org.xhtmlrenderer.resource.ImageResource;
