@@ -1,12 +1,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>es.indra.elinares</groupId>
+  <groupId>com.gmail.elinares</groupId>
   <artifactId>LRFTools</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>0.9.212</version>
   <name>LRFTools</name>
-  <url>http://maven.apache.org</url>
+  <description>LRFTools. Convert LRF to EPUB, HTML, PDF and RTF
+Another tool, credits to scotty1024 (LRFParse.java), Bruno Lowagie (iText) and people at apache jakarta project, xHTMLRenderer project and others right now I cannot remember.
+
+It can convert LRF files to RTF, PDF, HTML and EPUB. Also can merge LRF and PDF books in one big PDF with TOC, and merge EPUB files into one. And now you can view epub files (use page and key down/up).
+
+You can convert PDFs to EPUB using this tool.
+And starting at version 0.9.193, you can conver MS Word 2007 (docx) files to EPUB
+v0.9.204 can deal with all scrambled and/or compressed streams
+
+Usage:
+http://code.google.com/p/lrf-epub-tools/
+
+Download:
+http://code.google.com/p/lrf-epub-tools/downloads/list
+
+ChangeLog:
+http://code.google.com/p/lrf-epub-tools/updates/list</description>
+  <url>http://www.mobileread.com/forums/showthread.php?t=28707</url>
   <dependencies>
     <dependency>
       <groupId>xerces</groupId>
