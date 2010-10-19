@@ -3,8 +3,6 @@ package lrf.pdf.flow;
 import java.util.Collections;
 import java.util.Vector;
 
-import com.lowagie.text.Font;
-
 import lrf.html.HtmlDoc;
 
 
@@ -176,6 +174,7 @@ public class Flower {
 			if(p.equals(until))
 				break;
 			p.emitHTML(doc);
+			System.out.println(p.toString());
 		}
 	}
 	
