@@ -50,7 +50,11 @@ public class GraphicsHook extends Graphics2D {
 	private int height,width;
 	
 	public GraphicsHook(){
-		pw=null;
+		this(null);
+	}
+	
+	public GraphicsHook(PrintWriter pw2){
+		pw=pw2;
 		flw=new Flower();
 		init();
 	}
@@ -463,6 +467,7 @@ public class GraphicsHook extends Graphics2D {
 		p("translate",x,y);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void addRenderingHints(Map<?, ?> hints) {
 		if(pw!=null) pw.println(" <addRenderingHints>");

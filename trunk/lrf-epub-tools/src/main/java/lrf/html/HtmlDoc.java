@@ -179,7 +179,6 @@ public class HtmlDoc implements EPUBEntity{
 	}
 	
 	public void createEPUB(EPUBMetaData e, String catpar) throws Exception {
-		int sz=emits.size();
 		String divAnterior="1",divActual="2";
 		String spanAnterior="",spanActual="";
 		boolean spanAnteriorEOP=false;
