@@ -6,8 +6,8 @@ import lrf.html.HtmlDoc;
 
 
 public abstract class Piece implements Comparable<Piece>{
-	static final double htol=100;
-	static final double vtol=10;
+	static final double horizTolerance=100;
+	static final double vertiTolerance=10;
 	Rectangle2D rect;
 	int numPage;
 	
@@ -46,7 +46,7 @@ public abstract class Piece implements Comparable<Piece>{
 			return -1;
 		if(numPage>o.numPage)
 			return 1;
-		if(Math.abs(getY()-o.getY())>vtol){
+		if(Math.abs(getY()-o.getY())>vertiTolerance){
 			if(getY()<o.getY())
 				return -1;
 			else 
@@ -59,18 +59,18 @@ public abstract class Piece implements Comparable<Piece>{
 		return 0;
 	}
 	public boolean isHorizAdjacent(Piece other){
-		if(Math.abs(getY()-other.getY())>vtol){
+		if(Math.abs(getY()-other.getY())>vertiTolerance){
 			horizAdj=-1;
 			return false;
 		}
 		double tx=getX(),ox=other.getX();
 		if(tx<ox){
 			horizAdj=Math.abs(tx+getWidth()-ox);
-			if(horizAdj<htol)
+			if(horizAdj<horizTolerance)
 				return true;
 		}else{
 			horizAdj=Math.abs(ox+other.getWidth()-tx);
-			if(horizAdj<htol)
+			if(horizAdj<horizTolerance)
 				return true;
 		}
 		return false;
@@ -89,28 +89,28 @@ public abstract class Piece implements Comparable<Piece>{
 		double lx=getX()+getWidth();
 		if(lx>rightBorder)
 			return true;
-		if(Math.abs(lx-rightBorder)<htol)
+		if(Math.abs(lx-rightBorder)<horizTolerance)
 			return true;
 		return false;
 	}
 	public boolean isOnLeftBorder(double leftBorder){
 		if(getX()<leftBorder)
 			return true;
-		if(Math.abs(getX()-leftBorder)<htol)
+		if(Math.abs(getX()-leftBorder)<horizTolerance)
 			return true;
 		return false;
 	}
 	public boolean isHeader(double yHead){
 		if(getY()<yHead)
 			return true;
-		if(Math.abs(getY()-yHead)<vtol)
+		if(Math.abs(getY()-yHead)<vertiTolerance)
 			return true;
 		return false;
 	}
 	public boolean isFooter(double yFoot){
 		if(getY()>yFoot)
 			return true;
-		if(Math.abs(getY()-yFoot)<vtol)
+		if(Math.abs(getY()-yFoot)<vertiTolerance)
 			return true;
 		return false;
 	}
