@@ -72,7 +72,7 @@ public class Flower {
 				p1=p2;
 				continue;
 			}
-			if( 	Math.abs(p1.getY()-p2.getY())<Piece.vtol 
+			if( 	Math.abs(p1.getY()-p2.getY())<Piece.vertiTolerance 
 					&& p1.getX()< p2.getX() 
 					//&& p2.getX()-(p1.getX()+p1.getWidth())<10
 					//&& p1.isSameStyle(p2)
@@ -174,7 +174,7 @@ public class Flower {
 			if(p.equals(until))
 				break;
 			p.emitHTML(doc);
-			System.out.println(p.toString());
+			//System.out.println(p.toString());
 		}
 	}
 	
