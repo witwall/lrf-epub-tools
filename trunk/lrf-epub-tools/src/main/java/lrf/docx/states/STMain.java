@@ -6,7 +6,6 @@ import lrf.docx.Context;
 import lrf.docx.SHDocument;
 import lrf.docx.SHRelations;
 import lrf.docx.SHStyles;
-import lrf.epub.XMLNode;
 
 import org.xml.sax.Attributes;
 
@@ -111,7 +110,7 @@ public class STMain implements State {
 					element.remove("pStyle");
 				}
 			} else {
-				context.addData("<br/>");
+				context.addData("<p>");
 			}
 			initList();
 		} else if(lName.equals("instrText")){

@@ -3,30 +3,25 @@ package lrf.pdf.flow;
 import java.util.Collections;
 import java.util.Vector;
 
+import lrf.RecurseDirs;
 import lrf.html.HtmlDoc;
 
 
 
 public class Flower {
-	static final double initRBorder=540;
-	static final double initLBorder=60;
 	
-	double pWidth=600D;
-	double pHeight=800D;
-	double yHead=40D;
-	double yFoot=760D;
-	double rBorder=initRBorder;
-	double lBorder=initLBorder;
+	
+	public int pageNumber=0;
 	
 	int currentPageHeight, currentPageWidth;
 	
 	Vector<Piece> pieces=new Vector<Piece>();
 	Piece lastAdded=null;
 	
-	public void newPage(int pn, int width, int height){
+	public void newPage(int width, int height){
 		currentPageHeight=height;
 		currentPageWidth=width;
-		addPiece(new PageBreakPiece(pn));
+		addPiece(new PageBreakPiece(++pageNumber));
 	}
 	
 	public void addPiece(Piece p){
@@ -34,69 +29,35 @@ public class Flower {
 	}
 	
 	public void managePieces(HtmlDoc doc){
-		rBorder=initRBorder;
-		lBorder=initLBorder;
 		//Ordenamos las piezas empezando por la primera pagina,
 		//dentro de cada pagina por altura (y) y luego por
 		//posicion x.
 		Collections.sort(pieces);
 		//Retiramos el efecto BOLD simulado (dos veces en 1 pixel)
-		TextPiece p1=null,p2=null;
-		for(int i=0;i<pieces.size();i++){
-			Piece p=pieces.get(i);
-			if(!(p instanceof TextPiece))
-				continue;
-			p2=(TextPiece)p;
-			if(p1==null){
-				p1=p2;
-				continue;
-			}
-			if(    p1.getY()+p1.getHeight()>p2.getY()
-				&& p1.getX()+p1.getWidth()>p2.getX()
-				&& p1.txt.equals(p2.txt)	){
-				//p1.font=p1.font.deriveFont(Font.BOLD);
-				//Borramos p2
-				pieces.remove(i);
-				i--;
-				continue;
-			}
-			p1=p2;
-		}
+		supressBoldEffect();
 		//y unimos el texto adyacente
-		for(int i=0;i<pieces.size();i++){
-			Piece p=pieces.get(i);
-			if(!(p instanceof TextPiece))
-				continue;
-			p2=(TextPiece)p;
-			if(p1==null){
-				p1=p2;
-				continue;
-			}
-			if( 	Math.abs(p1.getY()-p2.getY())<Piece.vertiTolerance 
-					&& p1.getX()< p2.getX() 
-					//&& p2.getX()-(p1.getX()+p1.getWidth())<10
-					//&& p1.isSameStyle(p2)
-			){
-				p1.txt+=p2.txt;
-				p1.rect.setRect(p1.getX(),p1.getY(),p1.getWidth()+p2.getWidth(),p1.getHeight());
-				pieces.remove(i);
-				i--;
-				continue;
-			}
-			p1=p2;
-		}
+		jointAdjacentText();
+		//deteccion de paragraphs
+		detectParaghraphs(doc);
+	}
+
+	private void detectParaghraphs(HtmlDoc doc) {
 		//Inicializamos algunas variables
+		double yHead=currentPageHeight*0.02;
+		double yFoot=currentPageHeight*0.98;
 		TextPiece last=null;
 		TextPiece lastSOP=null;
 		//Ahora nos dedicamos a detectar los paragraphs.
-		double resetBorderAtY=900;
+		double rBorder=currentPageWidth*1.00;
+		double lBorder=currentPageWidth*0.00;
+		double resetBorderAtY=currentPageHeight*1.1;
 		double lengthOfText=0;
 		for(Piece p:pieces){
 			if(last!=null){
 				if(last.numPage!=p.numPage || p.getY()>=resetBorderAtY){
-					resetBorderAtY=900;
-					lBorder=initLBorder;
-					rBorder=initRBorder;
+					resetBorderAtY=currentPageHeight*1.1;
+					rBorder=currentPageWidth*1.00;
+					lBorder=currentPageWidth*0.00;
 				}
 			}
 			if(p instanceof ImagePiece){
@@ -117,7 +78,7 @@ public class Flower {
 					lastSOP=current;
 				}else{
 					if( last.isHorizAdjacent(current) ||
-						(last.isOnRightBorder(rBorder) && current.isOnLeftBorder(lBorder)))
+						(last.endOnRightBorder(lBorder,rBorder) && current.beginOnLeftBorder(lBorder,rBorder)))
 					{
 						last.isEndOfParagraph=false;
 						current.isStartOfParagraph=false;
@@ -127,7 +88,7 @@ public class Flower {
 					}else{
 						//Fin de paragraph. Hay que comprobar si son head o foot
 						last.isEndOfParagraph=true;
-						if(lengthOfText<500){
+						if(lengthOfText<currentPageWidth*0.80){
 							lastSOP.hPos(lBorder, rBorder);
 							lastSOP.vPos(yHead, yFoot);
 						}else{
@@ -144,6 +105,7 @@ public class Flower {
 				last=current;
 			}
 		}
+		/*
 		dumpPieces(pieces,lastSOP,doc);
 		Vector<Piece> preserve=new Vector<Piece>();
 		if(lastSOP!=null)
@@ -151,10 +113,63 @@ public class Flower {
 				preserve.add( pieces.get(pos) );
 			}
 		pieces=preserve;
+		*/
+	}
+
+	private void jointAdjacentText() {
+		TextPiece p1=null,p2=null;
+		int ciclos=0;
+		for(int i=0;i<pieces.size();i++,ciclos++){
+			Piece p=pieces.get(i);
+			if(!(p instanceof TextPiece))
+				continue;
+			p2=(TextPiece)p;
+			if(p1==null){
+				p1=p2;
+				continue;
+			}
+			float p1x=p1.getX(),p1y=p1.getY(),p2x=p2.getX(),p2y=p2.getY(),p1w=p1.getWidth(),p2w=p2.getWidth();
+			if( 	   p1y==p2y 
+					&& p1x<p2x 
+					&& p1x+p1w-p2x<p1w/4
+					&& p1.isSameStyle(p2)
+			){
+				p1.append(p2);
+				pieces.remove(i);
+				i--;
+				//System.out.println("\nciclo="+ciclos+" Joined:"+p1.txt);
+				continue;
+			}
+			p1=p2;
+		}
+	}
+
+	private void supressBoldEffect() {
+		TextPiece p1=null,p2=null;
+		for(int i=0;i<pieces.size();i++){
+			Piece p=pieces.get(i);
+			if(!(p instanceof TextPiece))
+				continue;
+			p2=(TextPiece)p;
+			if(p1==null){
+				p1=p2;
+				continue;
+			}
+			if(  p1.getY()+p1.getHeight()>p2.getY()
+				&& p2.getX()-p1.getX()<p1.getWidth()/3
+				&& p1.txt.equals(p2.txt)	){
+				//p1.font=p1.font.deriveFont(Font.BOLD);
+				//Borramos p2
+				pieces.remove(i);
+				i--;
+				//System.out.println("\nSuppressed:"+p1.txt);
+				continue;
+			}
+			p1=p2;
+		}
 	}
 	
 	public void dumpPieces(Vector<Piece> vpi, TextPiece until, HtmlDoc doc){
-		TextPiece.adjusted=false;
 		//Primero acumulamos los textos con los mismos estilos.
 		for(int i=0;i<pieces.size()-1 && !pieces.get(i+1).equals(until);i++){
 			Piece p=pieces.get(i);

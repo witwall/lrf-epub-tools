@@ -12,9 +12,9 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.RenderingHints.Key;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.RenderingHints.Key;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
@@ -42,7 +42,6 @@ import lrf.Utils;
 import lrf.base64.Base64;
 import lrf.pdf.flow.Flower;
 import lrf.pdf.flow.ImagePiece;
-import lrf.pdf.flow.TextPiece;
 
 public class GraphicsHook extends Graphics2D {
 	private PrintWriter pw;
@@ -74,17 +73,15 @@ public class GraphicsHook extends Graphics2D {
 		if(pw!=null) pw.println(" <error txt=\""+s+"\"/>");
 	}
 
-	int pageNumber=0;
 	public void newPage(int w, int h){
 		height=h;
 		width=w;
-		pageNumber++;
-		flw.newPage(pageNumber, w, h);
-		if(pageNumber>1){
+		flw.newPage(w, h);
+		if(flw.pageNumber>1){
 			if(pw!=null) pw.println("</page>");
-			if(pw!=null) pw.println("<page number=\""+(pageNumber)+"\">");
+			if(pw!=null) pw.println("<page number=\""+(flw.pageNumber)+"\">");
 		}else{
-			if(pw!=null) pw.println("<page number=\""+(pageNumber)+"\">");
+			if(pw!=null) pw.println("<page number=\""+(flw.pageNumber)+"\">");
 		}
 	}
 	
@@ -234,7 +231,7 @@ public class GraphicsHook extends Graphics2D {
 		byte bs[]=toFormat(img, "jpeg");
 		if(pw!=null) pw.println(Base64.encodeBytes(bs));
 		pc("Image",2);
-		flw.addPiece(new ImagePiece(pageNumber,(float)x,(float)y,img,xt));
+		flw.addPiece(new ImagePiece(flw.pageNumber,(float)x,(float)y,img,xt));
 	}
 	
 	@Override
@@ -350,7 +347,7 @@ public class GraphicsHook extends Graphics2D {
 	@Override
 	public void drawString(String str, int x, int y) {
 		pStr(1,"drawString",str,x,y);
-		flw.addPiece(new TextPiece(pageNumber,x,y,str,_font,_color,getFontRenderContext()));
+		//flw.addPiece(new TextPiece(flw.pageNumber,x,y,str,_font,_color,getFontRenderContext()));
 	}
 
 	@Override
@@ -521,7 +518,7 @@ public class GraphicsHook extends Graphics2D {
 		if(str.trim().length()==0)
 			return;
 		pStr(1,"drawString",str,x,y);
-		flw.addPiece(new TextPiece(pageNumber,x,y,str,_font,_color,getFontRenderContext()));
+		//flw.addPiece(new TextPiece(flw.pageNumber,x,y,str,_font,_color,getFontRenderContext()));
 	}
 	@Override
 	public void drawString(AttributedCharacterIterator iterator, float x,

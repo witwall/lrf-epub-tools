@@ -4,7 +4,7 @@
   <groupId>com.gmail.elinares</groupId>
   <artifactId>LRFTools</artifactId>
   <packaging>jar</packaging>
-  <version>0.9.212</version>
+  <version>0.9.214</version>
   <name>LRFTools</name>
   <description>LRFTools. Convert LRF to EPUB, HTML, PDF and RTF
 Another tool, credits to scotty1024 (LRFParse.java), Bruno Lowagie (iText) and people at apache jakarta project, xHTMLRenderer project and others right now I cannot remember.
@@ -48,7 +48,7 @@ http://code.google.com/p/lrf-epub-tools/updates/list</description>
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>0.8.0-incubating</version>
+      <version>1.3.1</version>
     </dependency>
     <dependency>
       <groupId>com.lowagie</groupId>
