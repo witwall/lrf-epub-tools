@@ -158,12 +158,16 @@ public class StyleItem implements Comparable<StyleItem>{
 	}
 	
 	public StyleItem(String n, int v){
+		this(n,(float)v);
+	}
+	
+	public StyleItem(String n, float v){
 		propName=n;
 		numeric=true;
 		unit="";
-		number=((float)v);
+		number=v;
 	}
-	
+
 	public StyleItem(String n, String v){
 		propName=n;
 		value=v;

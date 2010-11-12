@@ -56,7 +56,7 @@ public class PDFSerializer {
 			dest.getParentFile().mkdirs();
 			//Este graphicsHook lo usa pagedrawer
 			gh = new GraphicsHook();
-			PageDrawer pdr=new PageDrawer();
+			PDFHack pageDrawer=new PDFHack(gh.getFlower());
 			//Titulo y autor
 			PdfReader pdfReader=new PdfReader(pdfFile.getCanonicalPath());
 			HashMap<String, String> info=pdfReader.getInfo();
@@ -88,7 +88,7 @@ public class PDFSerializer {
 					gh.newPage((int)pdrect.getWidth(),(int)pdrect.getHeight());
 				else
 					gh.newPage(600, 800);
-				pdr.drawPage(gh, pages.get(i), dim);
+				pageDrawer.drawPage(gh, pages.get(i), dim);
 				if(i%30==0){
 					System.out.print("-");
 					System.out.flush();

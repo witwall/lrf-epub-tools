@@ -90,6 +90,7 @@ public class SHStyles extends DefaultHandler {
 		if(defaultStyleName!=null){
 			ret+="DIV {"+estilos.get(defaultStyleName)+"}\n";
 		}
+		ret+="p { text-indent:2.0em; padding-top:0.2em; padding-bottom:0.2em; text-align:justify; }";
 		return ret;
 	}
 	
